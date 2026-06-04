@@ -41,7 +41,7 @@ class _MainWrapperState extends State<MainWrapper> {
           backgroundColor: bgColor,
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentNavIndex,
-          selectedItemColor: Colors.white,
+          selectedItemColor: Colors.blue,
           unselectedItemColor: Colors.grey[600],
           selectedFontSize: 12,
           unselectedFontSize: 12,
@@ -63,7 +63,7 @@ class _MainWrapperState extends State<MainWrapper> {
                 padding: EdgeInsets.only(bottom: 4),
                 child: Icon(Icons.ondemand_video),
               ),
-              label: 'Kênh',
+              label: 'Truyền Hình',
             ),
             BottomNavigationBarItem(
               icon: Padding(

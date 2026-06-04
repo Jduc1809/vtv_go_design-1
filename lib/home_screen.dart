@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
             Icon(Icons.construction, size: 64, color: Colors.grey[800]),
             const SizedBox(height: 16),
             const Text(
-              'Trang Chủ\n(Future features go here!)',
+              'Trang Chủ đang được xây dựng...',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),

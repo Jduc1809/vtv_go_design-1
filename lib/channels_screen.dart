@@ -87,9 +87,8 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                     ),
                   ),
                 ),
-              ],
-
-              // The Swipeable Category Tabs
+              ], //Actions
+              //Category Tabs
               bottom: TabBar(
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
