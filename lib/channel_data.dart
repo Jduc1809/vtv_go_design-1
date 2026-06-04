@@ -82,6 +82,7 @@ class Channel {
   final String name;
   final String logo;
   final int pressedIndex;
+  final String thumbnail;
 
   final CurrentProgram currentProgram;
 
@@ -90,7 +91,7 @@ class Channel {
     required this.name,
     required this.logo,
     required this.pressedIndex,
-
+    required this.thumbnail,
     required this.currentProgram,
   });
 
@@ -99,6 +100,7 @@ class Channel {
       id: json['id']?.toString() ?? '',
       name: json['name'] ?? 'Unknown Channel',
       logo: json['logo'] ?? '',
+      thumbnail: json['thumbnail'] ?? '',
       pressedIndex: json['pressedIndex'] ?? 0,
       currentProgram: CurrentProgram.fromJson(json['currentProgram']),
     );

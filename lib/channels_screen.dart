@@ -69,70 +69,63 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                 fit: BoxFit.contain,
               ),
 
-              // Search and Avatar Actions
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.grey, size: 28),
-                  onPressed: () {},
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(right: 16.0, left: 8.0),
-                  child: CircleAvatar(
-                    radius: 14,
-                    backgroundColor: Colors.grey[800],
-                    child: const Icon(
-                      Icons.person,
-                      size: 20,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ], //Actions
-              //Category Tabs
+              //Tap Bar
               bottom: TabBar(
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.grey,
+
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.blue[600]?.withValues(alpha: 0.2),
+                  border: Border.all(color: Colors.blue[600]!, width: 1),
+                ),
+
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent,
+
+                labelColor: Colors.blue[300],
+                unselectedLabelColor: Colors.grey[600],
                 labelStyle: const TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
                 ),
                 unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.normal,
-                  fontSize: 16,
                 ),
-                dividerColor: Colors.transparent,
                 tabs: categories
-                    .map((category) => Tab(text: category.name))
+                    .map(
+                      (category) => Tab(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Text(category.name),
+                        ),
+                      ),
+                    )
                     .toList(),
               ),
             ),
-
             body: TabBarView(
               children: categories.map((category) {
-                // Responsive Desktop/Tablet/Mobile Logic
                 final screenWidth = MediaQuery.of(context).size.width;
-                int responsiveColumns = 3; // Default to 3 columns for mobile
-                if (screenWidth > 900) {
-                  responsiveColumns = 6;
-                } else if (screenWidth > 600) {
-                  responsiveColumns = 4;
+                int repsonsiveColumns = 2; // Default for small screens
+                if (screenWidth >= 600) {
+                  repsonsiveColumns = 3; // Medium screens
+                }
+                if (screenWidth >= 900) {
+                  repsonsiveColumns = 4; // Large screens
                 }
 
                 return GridView.builder(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 20,
+                    vertical: 16,
                   ),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: responsiveColumns,
+                    crossAxisCount: repsonsiveColumns,
                     crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
-                    childAspectRatio:
-                        0.85, // Makes the cards taller than they are wide
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 16 / 9,
                   ),
                   itemCount: category.channels.length,
                   itemBuilder: (context, index) {
@@ -148,58 +141,63 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                           ),
                         );
                       },
-
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          // Subtle grey gradient for the card background
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.grey[800]!, Colors.black],
-                          ),
-                          // Optional: subtle border to make them pop
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            width: 1,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Stack(
+                          fit: StackFit.expand,
                           children: [
-                            // 1. Centered Channel Logo
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(16.0),
-                                child: Image.network(
-                                  channel.logo,
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                        Icons.tv,
-                                        color: Colors.grey,
-                                        size: 40,
-                                      ),
+                            Image.network(
+                              channel.thumbnail.isNotEmpty
+                                  ? channel.thumbnail
+                                  : channel.logo,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(color: Colors.grey[800]),
+                            ),
+
+                            Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent,
+                                    Colors.black.withValues(alpha: 0.7),
+                                  ],
                                 ),
                               ),
                             ),
-
-                            // 2. Channel Name Text
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                bottom: 12.0,
-                                left: 4,
-                                right: 4,
+                            if (channel.logo.isEmpty) ...[
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24.0),
+                                  child: Image.network(
+                                    channel.logo,
+                                    height: 24,
+                                    fit: BoxFit.contain,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.tv,
+                                              size: 40,
+                                              color: Colors.white,
+                                            ),
+                                  ),
+                                ),
                               ),
+                            ],
+                            Positioned(
+                              bottom: 8,
+                              left: 8,
+                              right: 8,
                               child: Text(
                                 channel.name,
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
