@@ -22,7 +22,7 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    //Dark background color for the entire app
+    // Dark background color for the entire app
     const Color bgColor = Color(0xFF141415);
 
     return FutureBuilder<List<ChannelCategory>>(
@@ -69,51 +69,78 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                 fit: BoxFit.contain,
               ),
 
-              //Tap Bar
-              bottom: TabBar(
-                isScrollable: true,
-                tabAlignment: TabAlignment.start,
-
-                indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(24),
-                  color: Colors.blue[600]?.withValues(alpha: 0.2),
-                  border: Border.all(color: Colors.blue[600]!, width: 1),
-                ),
-
-                indicatorSize: TabBarIndicatorSize.tab,
-                dividerColor: Colors.transparent,
-
-                labelColor: Colors.blue[300],
-                unselectedLabelColor: Colors.grey[600],
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-                tabs: categories
-                    .map(
-                      (category) => Tab(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text(category.name),
+              // Tap Bar
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(60),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: 8.0,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: TabBar(
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        gradient: LinearGradient(
+                          colors: [Colors.blue[700]!, Colors.blue[400]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    )
-                    .toList(),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.grey[600],
+                      labelStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.normal,
+                      ),
+                      tabs: categories
+                          .map(
+                            (category) => Tab(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16.0,
+                                ),
+                                child: Text(category.name),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                ),
               ),
             ),
+
             body: TabBarView(
               children: categories.map((category) {
                 final screenWidth = MediaQuery.of(context).size.width;
-                int repsonsiveColumns = 2; // Default for small screens
+                int responsiveColumns = 2; // Default for small screens
                 if (screenWidth >= 600) {
-                  repsonsiveColumns = 3; // Medium screens
+                  responsiveColumns = 3; // Medium screens
                 }
                 if (screenWidth >= 900) {
-                  repsonsiveColumns = 4; // Large screens
+                  responsiveColumns = 4; // Large screens
                 }
 
                 return GridView.builder(
@@ -122,7 +149,7 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                     vertical: 16,
                   ),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: repsonsiveColumns,
+                    crossAxisCount: responsiveColumns,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                     childAspectRatio: 16 / 9,
@@ -154,7 +181,6 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                               errorBuilder: (context, error, stackTrace) =>
                                   Container(color: Colors.grey[800]),
                             ),
-
                             Container(
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
@@ -192,7 +218,6 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                               right: 8,
                               child: Text(
                                 channel.name,
-
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 14,

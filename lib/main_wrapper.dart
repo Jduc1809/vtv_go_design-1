@@ -42,7 +42,7 @@ class _MainWrapperState extends State<MainWrapper> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentNavIndex,
           selectedItemColor: Colors.blue,
-          unselectedItemColor: Colors.grey[600],
+          unselectedItemColor: Colors.grey[800],
           selectedFontSize: 12,
           unselectedFontSize: 12,
           onTap: (index) {

@@ -105,7 +105,7 @@ class _StreamScreenState extends State<StreamScreen> {
           return [
             OptionItem(
               onTap: (BuildContext menuContext) {
-                Navigator.pop(context);
+                Navigator.pop(menuContext);
 
                 showModalBottomSheet(
                   context: context,
@@ -215,11 +215,11 @@ class _StreamScreenState extends State<StreamScreen> {
     super.dispose();
   }
 
-  String _extractDate(String dateTimeStr) {
-    if (dateTimeStr.isEmpty) return 'Unknown Date';
-    if (dateTimeStr.contains('T')) return dateTimeStr.split('T')[0];
-    if (dateTimeStr.contains(' ')) return dateTimeStr.split(' ')[0];
-    return dateTimeStr;
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    final year = date.year.toString();
+    return "$day/$month/$year";
   }
 
   String _extractTime(String dateTimeStr) {
@@ -237,9 +237,8 @@ class _StreamScreenState extends State<StreamScreen> {
 
   Future<void> _seekBackward() async {
     if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized) {
+        !_videoPlayerController!.value.isInitialized)
       return;
-    }
     final currentPosition = await _videoPlayerController!.position;
     if (currentPosition != null) {
       final newPosition = currentPosition - const Duration(seconds: 5);
@@ -251,9 +250,8 @@ class _StreamScreenState extends State<StreamScreen> {
 
   Future<void> _seekForward() async {
     if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized) {
+        !_videoPlayerController!.value.isInitialized)
       return;
-    }
     final currentPosition = await _videoPlayerController!.position;
     if (currentPosition == null) return;
     final duration = _videoPlayerController!.value.duration;
@@ -305,34 +303,39 @@ class _StreamScreenState extends State<StreamScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const Color pureBlack = Colors.black;
+    const Color sheetColor = Color(0xFF1C1C1E);
+    const Color cardColor = Color(0xFF2C2C2E);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: pureBlack,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: pureBlack,
+        elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           widget.channel.name,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: Column(
         children: [
           Container(
             width: double.infinity,
-            color: Colors.black,
+            color: pureBlack,
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.45,
+              maxHeight: MediaQuery.of(context).size.height * 0.35,
             ),
             child: _errorMessage != null
                 ? AspectRatio(
                     aspectRatio: 16 / 9,
-                    child: Container(
-                      color: Colors.grey[900],
-                      child: Center(
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
-                        ),
+                    child: Center(
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
                       ),
                     ),
                   )
@@ -348,22 +351,44 @@ class _StreamScreenState extends State<StreamScreen> {
                 : const AspectRatio(
                     aspectRatio: 16 / 9,
                     child: Center(
-                      child: CircularProgressIndicator(color: Colors.red),
+                      child: CircularProgressIndicator(color: Colors.white),
                     ),
                   ),
           ),
           Expanded(
-            child: SingleChildScrollView(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: sheetColor,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[600],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
                   const Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 8.0,
+                    ),
                     child: Text(
                       'Lịch Phát Sóng',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -373,236 +398,229 @@ class _StreamScreenState extends State<StreamScreen> {
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: _availableDates.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       itemBuilder: (context, index) {
                         final date = _availableDates[index];
                         final isSelected =
                             date.day == _selectedDate.day &&
                             date.month == _selectedDate.month;
+                        final labelText = _formatDate(date);
 
-                        final now = DateTime.now();
-                        String labelText = '${date.day}/${date.month}';
-                        if (date.day == now.day && date.month == now.month) {
-                          labelText = 'Hôm nay';
-                        }
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ChoiceChip(
-                            label: Text(
-                              labelText,
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.grey,
-                                fontWeight: FontWeight.bold,
+                        return GestureDetector(
+                          onTap: () {
+                            if (!isSelected) _fetchScheduleForDate(date);
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.only(
+                              right: 12,
+                              top: 4,
+                              bottom: 8,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(24),
+                              color: isSelected ? null : cardColor,
+                              border: isSelected
+                                  ? null
+                                  : Border.all(
+                                      color: Colors.grey[700]!,
+                                      width: 1,
+                                    ),
+                              gradient: isSelected
+                                  ? LinearGradient(
+                                      colors: [
+                                        Colors.orange[400]!,
+                                        Colors.deepOrange[500]!,
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : null,
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.deepOrange.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : [],
+                            ),
+                            child: Center(
+                              child: Text(
+                                labelText,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.grey[400],
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
-                            selected: isSelected,
-                            selectedColor: Colors.red,
-                            backgroundColor: Colors.grey[900],
-                            showCheckmark: false,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            onSelected: (selected) {
-                              if (selected && !isSelected) {
-                                _fetchScheduleForDate(date);
-                              }
-                            },
                           ),
                         );
                       },
                     ),
                   ),
                   const SizedBox(height: 8),
-                  FutureBuilder<List<Program>>(
-                    future: _futureSchedule,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.all(32.0),
-                          child: Center(
-                            child: CircularProgressIndicator(color: Colors.red),
-                          ),
-                        );
-                      }
-                      if (snapshot.hasError) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Center(
+                  Expanded(
+                    child: FutureBuilder<List<Program>>(
+                      future: _futureSchedule,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.orange,
+                            ),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return Center(
                             child: Text(
                               'Lỗi: ${snapshot.error}',
                               style: const TextStyle(color: Colors.red),
                             ),
-                          ),
-                        );
-                      }
-                      if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.all(32.0),
-                          child: Center(
+                          );
+                        }
+                        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                          return const Center(
                             child: Text(
                               'Không có chương trình khả dụng',
                               style: TextStyle(color: Colors.grey),
                             ),
-                          ),
-                        );
-                      }
-
-                      final schedule = snapshot.data!;
-
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: schedule.length,
-                        itemBuilder: (context, index) {
-                          final program = schedule[index];
-
-                          final String currentDate = _extractDate(
-                            program.startDate,
                           );
-                          final String previousDate = index > 0
-                              ? _extractDate(schedule[index - 1].startDate)
-                              : '';
-                          final bool isNewDateSection =
-                              currentDate != previousDate;
+                        }
 
-                          final String displayStartTime = _extractTime(
-                            program.startDate,
-                          );
-                          final String displayEndTime = _extractTime(
-                            program.endDate,
-                          );
+                        final schedule = snapshot.data!;
 
-                          Widget programTile = Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            child: ListTile(
-                              tileColor: program.isLive
-                                  ? Colors.red.withValues(alpha: 0.15)
-                                  : Colors.grey[900],
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                side: program.isLive
-                                    ? const BorderSide(color: Colors.red)
-                                    : BorderSide.none,
-                              ),
+                        return ListView.builder(
+                          padding: const EdgeInsets.only(bottom: 24, top: 8),
+                          itemCount: schedule.length,
+                          itemBuilder: (context, index) {
+                            final program = schedule[index];
+                            final String displayStartTime = _extractTime(
+                              program.startDate,
+                            );
+
+                            return GestureDetector(
                               onTap: () {
-                                if (program.isLive) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Bạn đang xem trực tiếp chương trình này',
-                                      ),
-                                    ),
-                                  );
-                                } else if (program.isPlayable) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Chuyển sang: ${program.title}...',
-                                      ),
-                                      backgroundColor: Colors.blue,
-                                    ),
-                                  );
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Chương trình không thể xem lại',
-                                      ),
-                                      backgroundColor: Colors.redAccent,
-                                    ),
-                                  );
-                                }
+                                // Add Catch-up VOD logic here later!
                               },
-                              leading: SizedBox(
-                                width: 55,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 8,
+                                ),
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: cardColor,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: program.isLive
+                                      ? Border.all(
+                                          color: Colors.red.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                          width: 1,
+                                        )
+                                      : null,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    Text(
-                                      displayStartTime,
-                                      style: TextStyle(
-                                        color: program.isLive
-                                            ? Colors.red
-                                            : Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            displayStartTime,
+                                            style: TextStyle(
+                                              color: program.isLive
+                                                  ? Colors.redAccent
+                                                  : Colors.grey[400],
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            program.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              height: 1.3,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      displayEndTime,
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 12,
-                                      ),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      width: 1,
+                                      height: 40,
+                                      color: Colors.grey[700],
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: Colors.white,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(
+                                                  alpha: 0.2,
+                                                ),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Icon(
+                                            program.isLive
+                                                ? Icons.play_arrow
+                                                : Icons.play_arrow_rounded,
+                                            color: pureBlack,
+                                            size: 20,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          program.isLive
+                                              ? 'Trực Tiếp'
+                                              : 'Xem Lại',
+                                          style: TextStyle(
+                                            color: program.isLive
+                                                ? Colors.redAccent
+                                                : Colors.grey[400],
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                              title: Text(
-                                program.title,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: program.isLive
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                              trailing: program.isLive
-                                  ? const Chip(
-                                      label: Text(
-                                        'LIVE',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                      backgroundColor: Colors.red,
-                                      side: BorderSide.none,
-                                    )
-                                  : program.isPlayable
-                                  ? const Icon(
-                                      Icons.replay,
-                                      color: Colors.blueAccent,
-                                      size: 20,
-                                    )
-                                  : null,
-                            ),
-                          );
-
-                          if (isNewDateSection) {
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 16,
-                                    top: 16,
-                                    bottom: 8,
-                                  ),
-                                  child: Text(
-                                    currentDate,
-                                    style: const TextStyle(
-                                      color: Colors.blueAccent,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                programTile,
-                              ],
                             );
-                          }
-
-                          return programTile;
-                        },
-                      );
-                    },
+                          },
+                        );
+                      },
+                    ),
                   ),
                 ],
               ),
