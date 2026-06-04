@@ -237,8 +237,9 @@ class _StreamScreenState extends State<StreamScreen> {
 
   Future<void> _seekBackward() async {
     if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized)
+        !_videoPlayerController!.value.isInitialized) {
       return;
+    }
     final currentPosition = await _videoPlayerController!.position;
     if (currentPosition != null) {
       final newPosition = currentPosition - const Duration(seconds: 5);
@@ -250,8 +251,9 @@ class _StreamScreenState extends State<StreamScreen> {
 
   Future<void> _seekForward() async {
     if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized)
+        !_videoPlayerController!.value.isInitialized) {
       return;
+    }
     final currentPosition = await _videoPlayerController!.position;
     if (currentPosition == null) return;
     final duration = _videoPlayerController!.value.duration;
@@ -393,6 +395,7 @@ class _StreamScreenState extends State<StreamScreen> {
                       ),
                     ),
                   ),
+                  //Schedule date selector
                   SizedBox(
                     height: 50,
                     child: ListView.builder(
@@ -469,6 +472,7 @@ class _StreamScreenState extends State<StreamScreen> {
                       },
                     ),
                   ),
+                  //Program schedule list
                   const SizedBox(height: 8),
                   Expanded(
                     child: FutureBuilder<List<Program>>(
@@ -512,7 +516,7 @@ class _StreamScreenState extends State<StreamScreen> {
 
                             return GestureDetector(
                               onTap: () {
-                                // Add Catch-up VOD logic here later!
+                                // Add Catch-up VOD functionality here if program.isPlayable is true
                               },
                               child: Container(
                                 margin: const EdgeInsets.symmetric(
