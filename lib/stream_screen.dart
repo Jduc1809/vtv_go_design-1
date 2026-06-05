@@ -1,11 +1,10 @@
-import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
 import 'api_service.dart';
 import 'channel_data.dart';
+import 'custom_video_player.dart'; // Your beautifully custom-built player!
 
 class StreamScreen extends StatefulWidget {
   final Channel channel;
@@ -17,7 +16,6 @@ class StreamScreen extends StatefulWidget {
 
 class _StreamScreenState extends State<StreamScreen> {
   VideoPlayerController? _videoPlayerController;
-  ChewieController? _chewieController;
 
   late Future<List<Program>> _futureSchedule;
   String? _errorMessage;
@@ -87,85 +85,50 @@ class _StreamScreenState extends State<StreamScreen> {
       );
       await _videoPlayerController!.initialize();
 
-      _initializeChewie();
+      _videoPlayerController!.play();
+      setState(() {});
     } catch (e) {
       setState(() => _errorMessage = "Không thể tải luồng video: $e");
     }
   }
 
-  void _initializeChewie() {
-    setState(() {
-      _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController!,
-        autoPlay: true,
-        isLive: true,
-        aspectRatio: _videoPlayerController!.value.aspectRatio,
+  void _showResolutionMenu() {
+    if (_availableModes.isEmpty) return;
 
-        allowMuting: true,
-        allowPlaybackSpeedChanging: false,
-
-        overlay: _buildDoubleTapSeekOverlay(),
-        additionalOptions: (context) {
-          if (_availableModes.isEmpty) return [];
-
-          return [
-            OptionItem(
-              onTap: (BuildContext menuContext) {
-                Navigator.pop(menuContext);
-
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.grey[900],
-                  builder: (context) => ListView(
-                    shrinkWrap: true,
-                    children: _availableModes.map((mode) {
-                      final isSelected = mode.id == _currentSelectedMode?.id;
-                      return ListTile(
-                        leading: Icon(
-                          mode.isVip ? Icons.workspace_premium : Icons.hd,
-                          color: mode.isVip ? Colors.amber : Colors.white54,
-                        ),
-                        title: Text(
-                          mode.name,
-                          style: TextStyle(
-                            color: isSelected ? Colors.red : Colors.white,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                          ),
-                        ),
-                        subtitle: Text(
-                          mode.description,
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
-                          ),
-                        ),
-                        trailing: isSelected
-                            ? const Icon(Icons.check, color: Colors.red)
-                            : null,
-                        onTap: () {
-                          Navigator.pop(context);
-                          _switchResolutionMode(mode);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                );
-              },
-              iconData: Icons.settings_outlined,
-              title: 'Chất lượng (${_currentSelectedMode?.name ?? "Mặc định"})',
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      builder: (context) => ListView(
+        shrinkWrap: true,
+        children: _availableModes.map((mode) {
+          final isSelected = mode.id == _currentSelectedMode?.id;
+          return ListTile(
+            leading: Icon(
+              mode.isVip ? Icons.workspace_premium : Icons.hd,
+              color: mode.isVip ? Colors.amber : Colors.white54,
             ),
-          ];
-        },
-        errorBuilder: (context, errorMessage) => Center(
-          child: Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    });
+            title: Text(
+              mode.name,
+              style: TextStyle(
+                color: isSelected ? Colors.red : Colors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+            subtitle: Text(
+              mode.description,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+            trailing: isSelected
+                ? const Icon(Icons.check, color: Colors.red)
+                : null,
+            onTap: () {
+              Navigator.pop(context);
+              _switchResolutionMode(mode);
+            },
+          );
+        }).toList(),
+      ),
+    );
   }
 
   Future<void> _switchResolutionMode(ChannelSourceMode selectedMode) async {
@@ -195,8 +158,6 @@ class _StreamScreenState extends State<StreamScreen> {
 
     setState(() {
       _currentSelectedMode = selectedMode;
-      _chewieController?.dispose();
-      _chewieController = null;
     });
 
     final oldController = _videoPlayerController;
@@ -210,13 +171,14 @@ class _StreamScreenState extends State<StreamScreen> {
       await _videoPlayerController!.seekTo(currentPosition);
     }
 
-    _initializeChewie();
+    _videoPlayerController!.play();
+    setState(() {});
+
     oldController?.dispose();
   }
 
   @override
   void dispose() {
-    _chewieController?.dispose();
     _videoPlayerController?.dispose();
     super.dispose();
   }
@@ -230,18 +192,14 @@ class _StreamScreenState extends State<StreamScreen> {
 
   String _extractTime(String dateTimeStr) {
     if (dateTimeStr.isEmpty) return '--:--';
-
     try {
       String safeStr = dateTimeStr;
       if (!safeStr.endsWith('Z') && !safeStr.contains('+')) {
         safeStr += 'Z';
       }
-
       final DateTime parsedTime = DateTime.parse(safeStr).toLocal();
-
       final String hour = parsedTime.hour.toString().padLeft(2, '0');
       final String minute = parsedTime.minute.toString().padLeft(2, '0');
-
       return '$hour:$minute';
     } catch (e) {
       String timePart = '';
@@ -254,80 +212,6 @@ class _StreamScreenState extends State<StreamScreen> {
       }
       return timePart.length >= 5 ? timePart.substring(0, 5) : timePart;
     }
-  }
-
-  Future<void> _seekBackward() async {
-    if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized) {
-      return;
-    }
-    final currentPosition = await _videoPlayerController!.position;
-    if (currentPosition != null) {
-      final newPosition = currentPosition - const Duration(seconds: 5);
-      _videoPlayerController!.seekTo(
-        newPosition < Duration.zero ? Duration.zero : newPosition,
-      );
-    }
-  }
-
-  Future<void> _seekForward() async {
-    if (_videoPlayerController == null ||
-        !_videoPlayerController!.value.isInitialized) {
-      return;
-    }
-    final currentPosition = await _videoPlayerController!.position;
-    if (currentPosition == null) return;
-    final duration = _videoPlayerController!.value.duration;
-    final newPosition = currentPosition + const Duration(seconds: 5);
-
-    if (duration != Duration.zero && newPosition > duration) {
-      _videoPlayerController!.seekTo(duration);
-    } else {
-      _videoPlayerController!.seekTo(newPosition);
-    }
-  }
-
-  Widget _buildDoubleTapSeekOverlay() {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onDoubleTap: () {
-                    _seekBackward();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('⏪ Lùi 5s'),
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    );
-                  },
-                  child: const SizedBox.expand(),
-                ),
-              ),
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onDoubleTap: () {
-                    _seekForward();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('⏩ Tiến 5s'),
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    );
-                  },
-                  child: const SizedBox.expand(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
   }
 
   @override
@@ -349,30 +233,6 @@ class _StreamScreenState extends State<StreamScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_rounded, color: Colors.white),
-            onPressed: () {
-              final String shareText =
-                  'Xem ${widget.channel.name} trên VTV Go!';
-
-              final size = MediaQuery.of(context).size;
-
-              SharePlus.instance.share(
-                ShareParams(
-                  text: shareText,
-                  sharePositionOrigin: Rect.fromLTWH(
-                    0,
-                    0,
-                    size.width,
-                    size.height / 2,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
       ),
       body: Column(
         children: [
@@ -381,7 +241,7 @@ class _StreamScreenState extends State<StreamScreen> {
             width: double.infinity,
             color: pureBlack,
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.55,
+              maxHeight: MediaQuery.of(context).size.height * 0.45,
             ),
             child: _errorMessage != null
                 ? AspectRatio(
@@ -393,15 +253,14 @@ class _StreamScreenState extends State<StreamScreen> {
                       ),
                     ),
                   )
-                : _chewieController != null &&
-                      _chewieController!
-                          .videoPlayerController
-                          .value
-                          .isInitialized
+                : _videoPlayerController != null &&
+                      _videoPlayerController!.value.isInitialized
                 ? Center(
-                    child: AspectRatio(
-                      aspectRatio: _videoPlayerController!.value.aspectRatio,
-                      child: Chewie(controller: _chewieController!),
+                    child: CustomVideoPlayer(
+                      controller: _videoPlayerController!,
+                      isLive: true,
+                      onSettingsTap: _showResolutionMenu,
+                      shareText: 'Xem ${widget.channel.name} trên VTV Go!',
                     ),
                   )
                 : const AspectRatio(
@@ -412,7 +271,7 @@ class _StreamScreenState extends State<StreamScreen> {
                   ),
           ),
 
-          // 2. SCHEDULE & BOTTOM SHEET AREA
+          // 2. THE SCHEDULE AREA
           Expanded(
             child: Container(
               width: double.infinity,
@@ -451,8 +310,6 @@ class _StreamScreenState extends State<StreamScreen> {
                       ),
                     ),
                   ),
-
-                  // Date Selector
                   SizedBox(
                     height: 50,
                     child: ListView.builder(
@@ -529,8 +386,6 @@ class _StreamScreenState extends State<StreamScreen> {
                       },
                     ),
                   ),
-
-                  // Program Schedule List
                   const SizedBox(height: 8),
                   Expanded(
                     child: FutureBuilder<List<Program>>(
@@ -562,15 +417,8 @@ class _StreamScreenState extends State<StreamScreen> {
                         }
 
                         final schedule = snapshot.data!;
-
-                        int liveIndex = schedule.indexWhere(
-                          (program) => program.isLive,
-                        );
-
-                        int targetIndex = 0;
-                        if (liveIndex > 0) {
-                          targetIndex = liveIndex - 1;
-                        }
+                        int liveIndex = schedule.indexWhere((p) => p.isLive);
+                        int targetIndex = liveIndex > 0 ? liveIndex - 1 : 0;
 
                         return ScrollablePositionedList.builder(
                           initialScrollIndex: targetIndex,
@@ -586,11 +434,11 @@ class _StreamScreenState extends State<StreamScreen> {
                               onTap: () {
                                 if (!program.isLive) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
+                                    SnackBar(
                                       content: Text(
-                                        'Chức năng xem lại sẽ sớm được cập nhật!',
+                                        'Tính năng Xem lại: ${program.title} đang được phát triển!',
                                       ),
-                                      duration: Duration(seconds: 2),
+                                      duration: const Duration(seconds: 2),
                                       behavior: SnackBarBehavior.floating,
                                     ),
                                   );
