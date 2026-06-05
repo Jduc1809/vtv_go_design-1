@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+// ignore: camel_case_types
+class ServiceScreen extends StatelessWidget {
+  const ServiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -11,10 +12,13 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: bgColor,
-        title: Image.asset(
-          'assets/VTVgo_logo.jpg',
-          height: 28,
-          fit: BoxFit.contain,
+        title: Text(
+          'Cổng Dịch Vụ',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           IconButton(
@@ -38,7 +42,7 @@ class HomeScreen extends StatelessWidget {
             Icon(Icons.construction, size: 64, color: Colors.grey[800]),
             const SizedBox(height: 16),
             const Text(
-              'Trang chủ đang được xây dựng...',
+              'Trang cổng dịnh vụ đang được xây dựng...',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),

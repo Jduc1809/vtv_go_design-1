@@ -212,20 +212,6 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                                 ),
                               ),
                             ],
-                            Positioned(
-                              bottom: 8,
-                              left: 8,
-                              right: 8,
-                              child: Text(
-                                channel.name,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),

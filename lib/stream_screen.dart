@@ -1,5 +1,7 @@
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:video_player/video_player.dart';
 
 import 'api_service.dart';
@@ -98,6 +100,10 @@ class _StreamScreenState extends State<StreamScreen> {
         autoPlay: true,
         isLive: true,
         aspectRatio: _videoPlayerController!.value.aspectRatio,
+
+        allowMuting: true,
+        allowPlaybackSpeedChanging: false,
+
         overlay: _buildDoubleTapSeekOverlay(),
         additionalOptions: (context) {
           if (_availableModes.isEmpty) return [];
@@ -224,15 +230,30 @@ class _StreamScreenState extends State<StreamScreen> {
 
   String _extractTime(String dateTimeStr) {
     if (dateTimeStr.isEmpty) return '--:--';
-    String timePart = '';
-    if (dateTimeStr.contains('T')) {
-      timePart = dateTimeStr.split('T')[1];
-    } else if (dateTimeStr.contains(' ')) {
-      timePart = dateTimeStr.split(' ')[1];
-    } else {
-      return dateTimeStr;
+
+    try {
+      String safeStr = dateTimeStr;
+      if (!safeStr.endsWith('Z') && !safeStr.contains('+')) {
+        safeStr += 'Z';
+      }
+
+      final DateTime parsedTime = DateTime.parse(safeStr).toLocal();
+
+      final String hour = parsedTime.hour.toString().padLeft(2, '0');
+      final String minute = parsedTime.minute.toString().padLeft(2, '0');
+
+      return '$hour:$minute';
+    } catch (e) {
+      String timePart = '';
+      if (dateTimeStr.contains('T')) {
+        timePart = dateTimeStr.split('T')[1];
+      } else if (dateTimeStr.contains(' ')) {
+        timePart = dateTimeStr.split(' ')[1];
+      } else {
+        return dateTimeStr;
+      }
+      return timePart.length >= 5 ? timePart.substring(0, 5) : timePart;
     }
-    return timePart.length >= 5 ? timePart.substring(0, 5) : timePart;
   }
 
   Future<void> _seekBackward() async {
@@ -267,36 +288,42 @@ class _StreamScreenState extends State<StreamScreen> {
   }
 
   Widget _buildDoubleTapSeekOverlay() {
-    return Row(
+    return Stack(
       children: [
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onDoubleTap: () {
-              _seekBackward();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('⏪ Lùi 5s'),
-                  duration: Duration(milliseconds: 500),
+        Positioned.fill(
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onDoubleTap: () {
+                    _seekBackward();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⏪ Lùi 5s'),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    );
+                  },
+                  child: const SizedBox.expand(),
                 ),
-              );
-            },
-            child: const SizedBox.expand(),
-          ),
-        ),
-        Expanded(
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onDoubleTap: () {
-              _seekForward();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('⏩ Tiến 5s'),
-                  duration: Duration(milliseconds: 500),
+              ),
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onDoubleTap: () {
+                    _seekForward();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⏩ Tiến 5s'),
+                        duration: Duration(milliseconds: 500),
+                      ),
+                    );
+                  },
+                  child: const SizedBox.expand(),
                 ),
-              );
-            },
-            child: const SizedBox.expand(),
+              ),
+            ],
           ),
         ),
       ],
@@ -322,14 +349,39 @@ class _StreamScreenState extends State<StreamScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share_rounded, color: Colors.white),
+            onPressed: () {
+              final String shareText =
+                  'Xem ${widget.channel.name} trên VTV Go!';
+
+              final size = MediaQuery.of(context).size;
+
+              SharePlus.instance.share(
+                ShareParams(
+                  text: shareText,
+                  sharePositionOrigin: Rect.fromLTWH(
+                    0,
+                    0,
+                    size.width,
+                    size.height / 2,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
+          // 1. VIDEO PLAYER AREA
           Container(
             width: double.infinity,
             color: pureBlack,
             constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.35,
+              maxHeight: MediaQuery.of(context).size.height * 0.55,
             ),
             child: _errorMessage != null
                 ? AspectRatio(
@@ -346,9 +398,11 @@ class _StreamScreenState extends State<StreamScreen> {
                           .videoPlayerController
                           .value
                           .isInitialized
-                ? AspectRatio(
-                    aspectRatio: _videoPlayerController!.value.aspectRatio,
-                    child: Chewie(controller: _chewieController!),
+                ? Center(
+                    child: AspectRatio(
+                      aspectRatio: _videoPlayerController!.value.aspectRatio,
+                      child: Chewie(controller: _chewieController!),
+                    ),
                   )
                 : const AspectRatio(
                     aspectRatio: 16 / 9,
@@ -357,6 +411,8 @@ class _StreamScreenState extends State<StreamScreen> {
                     ),
                   ),
           ),
+
+          // 2. SCHEDULE & BOTTOM SHEET AREA
           Expanded(
             child: Container(
               width: double.infinity,
@@ -395,7 +451,8 @@ class _StreamScreenState extends State<StreamScreen> {
                       ),
                     ),
                   ),
-                  //Schedule date selector
+
+                  // Date Selector
                   SizedBox(
                     height: 50,
                     child: ListView.builder(
@@ -472,7 +529,8 @@ class _StreamScreenState extends State<StreamScreen> {
                       },
                     ),
                   ),
-                  //Program schedule list
+
+                  // Program Schedule List
                   const SizedBox(height: 8),
                   Expanded(
                     child: FutureBuilder<List<Program>>(
@@ -505,7 +563,17 @@ class _StreamScreenState extends State<StreamScreen> {
 
                         final schedule = snapshot.data!;
 
-                        return ListView.builder(
+                        int liveIndex = schedule.indexWhere(
+                          (program) => program.isLive,
+                        );
+
+                        int targetIndex = 0;
+                        if (liveIndex > 0) {
+                          targetIndex = liveIndex - 1;
+                        }
+
+                        return ScrollablePositionedList.builder(
+                          initialScrollIndex: targetIndex,
                           padding: const EdgeInsets.only(bottom: 24, top: 8),
                           itemCount: schedule.length,
                           itemBuilder: (context, index) {
@@ -516,7 +584,17 @@ class _StreamScreenState extends State<StreamScreen> {
 
                             return GestureDetector(
                               onTap: () {
-                                // Add Catch-up VOD functionality here if program.isPlayable is true
+                                if (!program.isLive) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Chức năng xem lại sẽ sớm được cập nhật!',
+                                      ),
+                                      duration: Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
                               },
                               child: Container(
                                 margin: const EdgeInsets.symmetric(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'channels_screen.dart';
 import 'home_screen.dart';
+import 'service_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -17,9 +18,7 @@ class _MainWrapperState extends State<MainWrapper> {
   final List<Widget> _screens = [
     const HomeScreen(), // Index 0: Trang Chủ
     const ChannelsScreen(), // Index 1: Kênh
-    const Center(
-      child: Text('Lịch Phát Sóng', style: TextStyle(color: Colors.white)),
-    ), // Index 2 Placeholder
+    const ServiceScreen(), // Index 2: Cổng Dịch Vụ
     const Center(
       child: Text('Tài Khoản', style: TextStyle(color: Colors.white)),
     ), // Index 3 Placeholder
@@ -68,9 +67,9 @@ class _MainWrapperState extends State<MainWrapper> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: EdgeInsets.only(bottom: 4),
-                child: Icon(Icons.calendar_today_outlined),
+                child: Icon(Icons.construction),
               ),
-              label: 'Lịch Phát Sóng',
+              label: 'Cổng Dịch Vụ',
             ),
             BottomNavigationBarItem(
               icon: Padding(
