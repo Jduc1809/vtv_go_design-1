@@ -235,6 +235,30 @@ class _StreamScreenState extends State<StreamScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          if (_currentlyPlayingProgram != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: TextButton.icon(
+                icon: const Icon(
+                  Icons.emergency_recording,
+                  color: Colors.redAccent,
+                  size: 18,
+                ),
+                label: const Text(
+                  'LIVE',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () {
+                  setState(() => _currentlyPlayingProgram = null);
+                  _loadAndPlayBroadcast();
+                },
+              ),
+            ),
+        ],
       ),
       body: Column(
         children: [
@@ -260,7 +284,7 @@ class _StreamScreenState extends State<StreamScreen> {
                 ? Center(
                     child: CustomVideoPlayer(
                       controller: _videoPlayerController!,
-                      isLive: true,
+                      isLive: _currentlyPlayingProgram?.isLive == null,
                       onSettingsTap: _showResolutionMenu,
                       shareText: 'Xem ${widget.channel.name} trên VTV Go!',
                     ),
