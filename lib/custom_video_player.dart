@@ -125,7 +125,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
       onTap: _toggleControls,
       child: Stack(
         children: [
-          // 1. RAW VIDEO LAYER
+          //VIDEO LAYER
           Center(
             child: AspectRatio(
               aspectRatio: widget.controller.value.aspectRatio,
@@ -133,7 +133,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
             ),
           ),
 
-          // 2. UNIFIED CONTROLS OVERLAY
+          //CONTROLS OVERLAY
           Positioned.fill(
             child: AnimatedOpacity(
               opacity: _showControls ? 1.0 : 0.0,

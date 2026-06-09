@@ -272,4 +272,40 @@ class ApiService {
       return null;
     }
   }
+
+  static Future<String?> fetchProgramStreamUrl(
+    String channelId,
+    String programId,
+  ) async {
+    final String baseUrl =
+        'https://staging-api-vtvgo.vtvdigital.vn/live-channel';
+    final url = Uri.parse(
+      '$baseUrl/api/v1/channels/$channelId/programs/$programId/source',
+    );
+
+    try {
+      final response = await http.get(url);
+
+      print("Schedule API response");
+      log(const JsonEncoder.withIndent('  ').convert(response.body));
+
+      if (response.statusCode == 200) {
+        final jsonBody = json.decode(response.body);
+        final data = jsonBody['data'];
+
+        if (data != null &&
+            data['sourceModes'] != null &&
+            data['sourceModes'].isNotEmpty) {
+          final sources = data['sourceModes'][0]['sources'];
+          if (sources != null && sources.isNotEmpty) {
+            return sources[0]['url'];
+          }
+        }
+      }
+    } catch (e) {
+      print('Error fetching program stream URL: $e');
+      return null;
+    }
+    return null;
+  }
 }
