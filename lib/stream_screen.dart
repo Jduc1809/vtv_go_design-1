@@ -241,7 +241,7 @@ class _StreamScreenState extends State<StreamScreen> {
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton.icon(
                 icon: const Icon(
-                  Icons.emergency_recording,
+                  Icons.emergency_recording_rounded,
                   color: Colors.redAccent,
                   size: 18,
                 ),
@@ -495,7 +495,6 @@ class _StreamScreenState extends State<StreamScreen> {
                                           Text(
                                             displayStartTime,
                                             style: TextStyle(
-                                              // 🔥 3. Move the red time text!
                                               color: isPlaying
                                                   ? Colors.redAccent
                                                   : Colors.grey[400],
