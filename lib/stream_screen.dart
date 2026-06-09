@@ -26,6 +26,8 @@ class _StreamScreenState extends State<StreamScreen> {
   List<ChannelSourceMode> _availableModes = [];
   ChannelSourceMode? _currentSelectedMode;
 
+  Program? _currentlyPlayingProgram;
+
   @override
   void initState() {
     super.initState();
@@ -559,5 +561,70 @@ class _StreamScreenState extends State<StreamScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _playProgramVOD(Program program) async {
+    if (_currentlyPlayingProgram == program) return;
+
+    //Live State
+    if (program.isLive) {
+      setState(() => _currentlyPlayingProgram == null);
+      await _loadAndPlayBroadcast();
+      return;
+    }
+    //NOT_STARTED state
+
+    try {
+      String safeStr = program.startDate;
+      if (safeStr.endsWith('Z') && !safeStr.contains('+')) safeStr += 'Z';
+      final startTime = DateTime.parse(safeStr).toLocal();
+
+      if (startTime.isAfter(DateTime.now())) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chương trình ${program.title} chưa bắt đầu!'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      // If we fail to parsing the date, we just continue with the API call
+    }
+
+    //CATCHUP state
+
+    setState(() {
+      _currentlyPlayingProgram = program;
+      _errorMessage = null;
+    });
+
+    try {
+      //API call here
+      final targetUrl = await ApiService.fetchProgramStreamUrl(
+        widget.channel.id,
+        program.id,
+      );
+
+      if (targetUrl == null || targetUrl.isEmpty) {
+        setState(() => _errorMessage = "Chương trình không thể xem lại");
+        return;
+      }
+
+      final oldController = _videoPlayerController;
+
+      _videoPlayerController = VideoPlayerController.networkUrl(
+        Uri.parse(targetUrl),
+      );
+      await _videoPlayerController!.initialize();
+
+      _videoPlayerController!.play();
+      setState(() {});
+
+      oldController?.dispose();
+    } catch (e) {
+      setState(() => "Không thể tải luồng video: $e");
+    }
   }
 }
