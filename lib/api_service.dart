@@ -284,9 +284,13 @@ class ApiService {
     );
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {'Authorization': AuthService.currentAccessToken!},
+      );
 
       print("Schedule API response");
+      print(response.statusCode);
       log(const JsonEncoder.withIndent('  ').convert(response.body));
 
       if (response.statusCode == 200) {
