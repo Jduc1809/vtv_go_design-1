@@ -456,9 +456,13 @@ class _StreamScreenState extends State<StreamScreen> {
                               program.startDate,
                             );
 
+                            final bool isPlaying =
+                                (_currentlyPlayingProgram == null &&
+                                    program.isLive) ||
+                                (_currentlyPlayingProgram?.id == program.id);
+
                             return GestureDetector(
                               onTap: () {
-                                //Playback
                                 _playProgramVOD(program);
                               },
                               child: Container(
@@ -470,7 +474,8 @@ class _StreamScreenState extends State<StreamScreen> {
                                 decoration: BoxDecoration(
                                   color: cardColor,
                                   borderRadius: BorderRadius.circular(16),
-                                  border: program.isLive
+
+                                  border: isPlaying
                                       ? Border.all(
                                           color: Colors.red.withValues(
                                             alpha: 0.5,
@@ -490,7 +495,8 @@ class _StreamScreenState extends State<StreamScreen> {
                                           Text(
                                             displayStartTime,
                                             style: TextStyle(
-                                              color: program.isLive
+                                              // 🔥 3. Move the red time text!
+                                              color: isPlaying
                                                   ? Colors.redAccent
                                                   : Colors.grey[400],
                                               fontSize: 14,
@@ -538,7 +544,7 @@ class _StreamScreenState extends State<StreamScreen> {
                                             ],
                                           ),
                                           child: Icon(
-                                            program.isLive
+                                            isPlaying
                                                 ? Icons.play_arrow
                                                 : Icons.play_arrow_rounded,
                                             color: pureBlack,
@@ -547,11 +553,15 @@ class _StreamScreenState extends State<StreamScreen> {
                                         ),
                                         const SizedBox(height: 6),
                                         Text(
-                                          program.isLive
-                                              ? 'Trực Tiếp'
-                                              : 'Xem Lại',
+                                          isPlaying
+                                              ? (program.isLive
+                                                    ? 'Trực Tiếp'
+                                                    : 'Đang Phát')
+                                              : (program.isLive
+                                                    ? 'Trực Tiếp'
+                                                    : 'Xem Lại'),
                                           style: TextStyle(
-                                            color: program.isLive
+                                            color: isPlaying
                                                 ? Colors.redAccent
                                                 : Colors.grey[400],
                                             fontSize: 11,
