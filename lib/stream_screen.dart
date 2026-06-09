@@ -434,17 +434,8 @@ class _StreamScreenState extends State<StreamScreen> {
 
                             return GestureDetector(
                               onTap: () {
-                                if (!program.isLive) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Tính năng Xem lại: ${program.title} đang được phát triển!',
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
+                                //Playback
+                                _playProgramVOD(program);
                               },
                               child: Container(
                                 margin: const EdgeInsets.symmetric(
