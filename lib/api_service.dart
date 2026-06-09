@@ -277,11 +277,10 @@ class ApiService {
     String channelId,
     String programId,
   ) async {
-    final String baseUrl =
-        'https://staging-api-vtvgo.vtvdigital.vn/live-channel';
+    // 🔥 FIX 1: Add the required query parameters so the server doesn't reject you!
     final url = Uri.parse(
-      '$baseUrl/api/v1/channels/$channelId/programs/$programId/source',
-    );
+      '$baseUrl/live-channel/api/v1/channels/$channelId/programs/$programId/source',
+    ).replace(queryParameters: {'platform': '3', 'dtId': '6', 'spId': '1'});
 
     try {
       final response = await http.get(
@@ -289,12 +288,14 @@ class ApiService {
         headers: {'Authorization': AuthService.currentAccessToken!},
       );
 
-      print("Schedule API response");
-      print(response.statusCode);
-      log(const JsonEncoder.withIndent('  ').convert(response.body));
+      print("VOD API response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final jsonBody = json.decode(response.body);
+
+        // 🔥 FIX 2: Decode the string FIRST, then log it so it formats beautifully!
+        log(const JsonEncoder.withIndent('  ').convert(jsonBody));
+
         final data = jsonBody['data'];
 
         if (data != null &&
