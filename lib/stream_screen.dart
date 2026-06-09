@@ -4,7 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import 'api_service.dart';
 import 'channel_data.dart';
-import 'custom_video_player.dart'; // Your beautifully custom-built player!
+import 'custom_video_player.dart';
 
 class StreamScreen extends StatefulWidget {
   final Channel channel;
@@ -52,7 +52,21 @@ class _StreamScreenState extends State<StreamScreen> {
     });
   }
 
+  Future<void> _disposeCurrentPlayer() async {
+    if (_videoPlayerController != null) {
+      await _videoPlayerController!.pause();
+      await _videoPlayerController!.dispose();
+      _videoPlayerController = null;
+    }
+  }
+
   Future<void> _loadAndPlayBroadcast() async {
+    setState(() {
+      _errorMessage = null;
+    });
+
+    await _disposeCurrentPlayer();
+
     try {
       final streamData = await ApiService.fetchStreamData(widget.channel.id);
 
@@ -181,7 +195,7 @@ class _StreamScreenState extends State<StreamScreen> {
 
   @override
   void dispose() {
-    _videoPlayerController?.dispose();
+    _disposeCurrentPlayer();
     super.dispose();
   }
 
@@ -216,6 +230,67 @@ class _StreamScreenState extends State<StreamScreen> {
     }
   }
 
+  Future<void> _playProgramVOD(Program program) async {
+    if (_currentlyPlayingProgram == program) return;
+
+    // Live State
+    if (program.isLive) {
+      setState(() => _currentlyPlayingProgram = null);
+      await _loadAndPlayBroadcast();
+      return;
+    }
+
+    // NOT_STARTED state
+    try {
+      String safeStr = program.startDate;
+      if (safeStr.endsWith('Z') && !safeStr.contains('+')) safeStr += 'Z';
+      final startTime = DateTime.parse(safeStr).toLocal();
+
+      if (startTime.isAfter(DateTime.now())) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Chương trình ${program.title} chưa bắt đầu!'),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+    } catch (e) {
+      // If we fail parsing the date, we just continue with the API call
+    }
+
+    // CATCHUP state
+    setState(() {
+      _currentlyPlayingProgram = program;
+      _errorMessage = null;
+    });
+
+    await _disposeCurrentPlayer();
+
+    try {
+      final targetUrl = await ApiService.fetchProgramStreamUrl(
+        widget.channel.id,
+        program.id,
+      );
+
+      if (targetUrl == null || targetUrl.isEmpty) {
+        setState(() => _errorMessage = "Chương trình không thể xem lại");
+        return;
+      }
+
+      _videoPlayerController = VideoPlayerController.networkUrl(
+        Uri.parse(targetUrl),
+      );
+      await _videoPlayerController!.initialize();
+
+      _videoPlayerController!.play();
+      setState(() {});
+    } catch (e) {
+      setState(() => _errorMessage = "Không thể tải luồng video: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color pureBlack = Colors.black;
@@ -241,7 +316,7 @@ class _StreamScreenState extends State<StreamScreen> {
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton.icon(
                 icon: const Icon(
-                  Icons.emergency_recording_rounded,
+                  Icons.emergency_recording,
                   color: Colors.redAccent,
                   size: 18,
                 ),
@@ -253,7 +328,11 @@ class _StreamScreenState extends State<StreamScreen> {
                   ),
                 ),
                 onPressed: () {
-                  setState(() => _currentlyPlayingProgram = null);
+                  // Ensure both the active program and any lingering errors are cleared!
+                  setState(() {
+                    _currentlyPlayingProgram = null;
+                    _errorMessage = null;
+                  });
                   _loadAndPlayBroadcast();
                 },
               ),
@@ -262,7 +341,7 @@ class _StreamScreenState extends State<StreamScreen> {
       ),
       body: Column(
         children: [
-          // 1. VIDEO PLAYER AREA
+          //VIDEO PLAYER AREA
           Container(
             width: double.infinity,
             color: pureBlack,
@@ -284,7 +363,7 @@ class _StreamScreenState extends State<StreamScreen> {
                 ? Center(
                     child: CustomVideoPlayer(
                       controller: _videoPlayerController!,
-                      isLive: _currentlyPlayingProgram?.isLive == null,
+                      isLive: _currentlyPlayingProgram == null,
                       onSettingsTap: _showResolutionMenu,
                       shareText: 'Xem ${widget.channel.name} trên VTV Go!',
                     ),
@@ -297,7 +376,7 @@ class _StreamScreenState extends State<StreamScreen> {
                   ),
           ),
 
-          // 2. THE SCHEDULE AREA
+          //THE SCHEDULE AREA
           Expanded(
             child: Container(
               width: double.infinity,
@@ -456,10 +535,13 @@ class _StreamScreenState extends State<StreamScreen> {
                               program.startDate,
                             );
 
+                            // 🔥 DYNAMIC HIGHLIGHT LOGIC
                             final bool isPlaying =
                                 (_currentlyPlayingProgram == null &&
                                     program.isLive) ||
                                 (_currentlyPlayingProgram?.id == program.id);
+
+                            final bool isRedText = isPlaying || program.isLive;
 
                             return GestureDetector(
                               onTap: () {
@@ -474,7 +556,7 @@ class _StreamScreenState extends State<StreamScreen> {
                                 decoration: BoxDecoration(
                                   color: cardColor,
                                   borderRadius: BorderRadius.circular(16),
-
+                                  // Border ONLY surrounds the active video
                                   border: isPlaying
                                       ? Border.all(
                                           color: Colors.red.withValues(
@@ -495,7 +577,7 @@ class _StreamScreenState extends State<StreamScreen> {
                                           Text(
                                             displayStartTime,
                                             style: TextStyle(
-                                              color: isPlaying
+                                              color: isRedText
                                                   ? Colors.redAccent
                                                   : Colors.grey[400],
                                               fontSize: 14,
@@ -560,7 +642,7 @@ class _StreamScreenState extends State<StreamScreen> {
                                                     ? 'Trực Tiếp'
                                                     : 'Xem Lại'),
                                           style: TextStyle(
-                                            color: isPlaying
+                                            color: isRedText
                                                 ? Colors.redAccent
                                                 : Colors.grey[400],
                                             fontSize: 11,
@@ -585,70 +667,5 @@ class _StreamScreenState extends State<StreamScreen> {
         ],
       ),
     );
-  }
-
-  Future<void> _playProgramVOD(Program program) async {
-    if (_currentlyPlayingProgram == program) return;
-
-    //Live State
-    if (program.isLive) {
-      setState(() => _currentlyPlayingProgram == null);
-      await _loadAndPlayBroadcast();
-      return;
-    }
-    //NOT_STARTED state
-
-    try {
-      String safeStr = program.startDate;
-      if (safeStr.endsWith('Z') && !safeStr.contains('+')) safeStr += 'Z';
-      final startTime = DateTime.parse(safeStr).toLocal();
-
-      if (startTime.isAfter(DateTime.now())) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Chương trình ${program.title} chưa bắt đầu!'),
-            backgroundColor: Colors.orange,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        return;
-      }
-    } catch (e) {
-      // If we fail to parsing the date, we just continue with the API call
-    }
-
-    //CATCHUP state
-
-    setState(() {
-      _currentlyPlayingProgram = program;
-      _errorMessage = null;
-    });
-
-    try {
-      //API call here
-      final targetUrl = await ApiService.fetchProgramStreamUrl(
-        widget.channel.id,
-        program.id,
-      );
-
-      if (targetUrl == null || targetUrl.isEmpty) {
-        setState(() => _errorMessage = "Chương trình không thể xem lại");
-        return;
-      }
-
-      final oldController = _videoPlayerController;
-
-      _videoPlayerController = VideoPlayerController.networkUrl(
-        Uri.parse(targetUrl),
-      );
-      await _videoPlayerController!.initialize();
-
-      _videoPlayerController!.play();
-      setState(() {});
-
-      oldController?.dispose();
-    } catch (e) {
-      setState(() => "Không thể tải luồng video: $e");
-    }
   }
 }

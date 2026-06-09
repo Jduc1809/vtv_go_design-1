@@ -52,8 +52,8 @@ class CurrentProgram {
 }
 
 class ChannelCategory {
-  String id;
-  String name;
+  final String id;
+  final String name;
   final List<Channel> channels;
 
   ChannelCategory({
