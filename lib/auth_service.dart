@@ -30,7 +30,7 @@ class AuthService {
       if (savedToken != null && savedRefreshToken != null) {
         currentAccessToken = savedToken;
         currentRefreshToken = savedRefreshToken;
-        print('Reading from disk: Found tokens');
+        print('Reading from device: Found tokens');
         return true;
       }
     }
@@ -98,18 +98,14 @@ class AuthService {
     }
   }
 
-  // ===========================================================================
-  // 2. Refresh Expired Token (Based on your new API Docs!)
-  // ===========================================================================
   static Future<bool> refreshExpiredToken() async {
     if (currentRefreshToken == null) {
       // If we don't have a refresh token, force a complete fresh login
       return await loginAsGuest(forceNetwork: true);
     }
 
-    print('🔄 AUTH: Attempting to refresh expired token...');
+    print('Auth: refreshing expired token');
 
-    // 🔥 The new MD5 formula from the documentation
     final String rawSignatureString =
         '$deviceId&&$deviceName&&$versionCode&&$platform&&$currentRefreshToken&&$SECRET';
     final String signature = md5
