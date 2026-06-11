@@ -328,7 +328,7 @@ class _StreamScreenState extends State<StreamScreen> {
                   ),
                 ),
                 onPressed: () {
-                  // Ensure both the active program and any lingering errors are cleared!
+                  // Ensure both the active program and any lingering errors are cleared
                   setState(() {
                     _currentlyPlayingProgram = null;
                     _errorMessage = null;
