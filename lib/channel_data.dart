@@ -136,11 +136,23 @@ class ChannelSourceMode {
       }
     }
 
+    if ((extractedUrl == null || extractedUrl.isEmpty) &&
+        json['sources'] != null &&
+        json['sources'] is List &&
+        json['sources'].isNotEmpty) {
+      extractedUrl = json['sources'][0]['url'];
+    }
+
+    if ((extractedUrl == null || extractedUrl.isEmpty) && json['url'] != null) {
+      extractedUrl = json['url']?.toString();
+    }
+
     return ChannelSourceMode(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['textDescription'] ?? '',
-      isVip: json['isVip'] == 1,
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Auto',
+      description: json['textDescription']?.toString() ?? '',
+      // Ensure we catch both integer '1' and boolean 'true'
+      isVip: json['isVip'] == 1 || json['isVip'] == true,
       streamUrl: extractedUrl,
     );
   }
