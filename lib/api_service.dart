@@ -47,7 +47,13 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        return json.decode(response.body);
+        final decodedBody = json.decode(response.body);
+
+        print('API calls successfully (${response.statusCode})');
+        log(const JsonEncoder.withIndent('  ').convert(decodedBody));
+        print('----------------------------------------------------\n');
+
+        return decodedBody;
       } else if (response.statusCode == 401) {
         print("Token expired");
 
@@ -108,71 +114,16 @@ class ApiService {
   }
 
   Future<String?> fetchStreamUrl(String channelId) async {
-    if (AuthService.currentAccessToken == null) return null;
+    final jsonResponse = await _get(
+      'live-channel/api/v2/channels/$channelId/source',
+    );
 
-    final Uri url =
-        Uri.parse(
-          '$baseUrl/live-channel/api/v2/channels/$channelId/source',
-        ).replace(
-          queryParameters: {
-            'platform': '3',
-            'dtId': '6',
-            'spId': '1',
-            'versionCode': '20260504',
-            'packageName': 'vn.vtv.vtvgotv',
-            'deviceName': 'Flutter Simulator',
-            'osVersion': '29',
-          },
-        );
+    if (jsonResponse != null && jsonResponse['data'] != 0) {
+      final sourceMode = ChannelSourceMode.fromJson(jsonResponse['data']);
 
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': AuthService.currentAccessToken!,
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-
-        print('API response for streams: $channelId');
-        log(const JsonEncoder.withIndent('  ').convert(jsonResponse));
-
-        final data = jsonResponse['data'];
-        if (data != null && data is Map) {
-          final sourceModes = data['sourceModes'];
-
-          if (sourceModes != null &&
-              sourceModes is List &&
-              sourceModes.isNotEmpty) {
-            final multiSource = sourceModes[0]['multiSource'];
-
-            if (multiSource != null &&
-                multiSource is List &&
-                multiSource.isNotEmpty) {
-              final sources = multiSource[0]['sources'];
-
-              if (sources != null && sources is List && sources.isNotEmpty) {
-                final String realStreamUrl =
-                    sources[0]['url']?.toString() ?? '';
-
-                if (realStreamUrl.isNotEmpty) {
-                  return realStreamUrl;
-                }
-              }
-            }
-          }
-        }
-        return null;
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Stream Fetch Exception: $e');
-      return null;
+      return sourceMode.streamUrl;
     }
+    return null;
   }
 
   static Future<List<Program>> fetchChannelSchedule(
