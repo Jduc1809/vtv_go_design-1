@@ -315,8 +315,7 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   ),
                                 ],
                               ),
-                              if (!widget.isLive &&
-                                  widget.controller.value.isInitialized)
+                              if (widget.controller.value.isInitialized)
                                 SizedBox(
                                   height: 20,
                                   child: SliderTheme(
@@ -334,48 +333,54 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                       thumbColor: Colors.red,
                                       overlayColor: Colors.red.withAlpha(32),
                                     ),
-                                    child: Slider(
-                                      min: 0.0,
-                                      max: widget
-                                          .controller
-                                          .value
-                                          .duration
-                                          .inMilliseconds
-                                          .toDouble(),
-                                      value: widget
-                                          .controller
-                                          .value
-                                          .position
-                                          .inMilliseconds
-                                          .toDouble()
-                                          .clamp(
-                                            0.0,
-                                            widget
-                                                .controller
-                                                .value
-                                                .duration
-                                                .inMilliseconds
-                                                .toDouble(),
-                                          ),
+                                    child: Builder(
+                                      builder: (context) {
+                                        final double durationMs = widget
+                                            .controller
+                                            .value
+                                            .duration
+                                            .inMilliseconds
+                                            .toDouble();
+                                        final double positionMs = widget
+                                            .controller
+                                            .value
+                                            .position
+                                            .inMilliseconds
+                                            .toDouble();
 
-                                      //When users drag the timeline
-                                      onChanged: (value) {
-                                        widget.controller.seekTo(
-                                          Duration(milliseconds: value.toInt()),
+                                        final double safeMax = durationMs > 0
+                                            ? durationMs
+                                            : 1.0;
+                                        final double safeValue = positionMs
+                                            .clamp(0.0, safeMax);
+
+                                        return Slider(
+                                          min: 0.0,
+                                          max: safeMax,
+                                          value: safeValue,
+
+                                          //When users drag the timeline
+                                          onChanged: (value) {
+                                            widget.controller.seekTo(
+                                              Duration(
+                                                milliseconds: value.toInt(),
+                                              ),
+                                            );
+                                          },
+
+                                          //When users grab the red dot
+                                          onChangeStart: (value) {
+                                            widget.controller
+                                                .pause(); //Pause the video while dragging
+                                            _hideTimer
+                                                ?.cancel(); //Make UI display the whole time
+                                          },
+
+                                          onChangeEnd: (value) {
+                                            widget.controller.play();
+                                            _startHideTimer();
+                                          },
                                         );
-                                      },
-
-                                      //When users grab the red dot
-                                      onChangeStart: (value) {
-                                        widget.controller
-                                            .pause(); //Pause the video while dragging
-                                        _hideTimer
-                                            ?.cancel(); //Make UI display the whole time
-                                      },
-
-                                      onChangeEnd: (value) {
-                                        widget.controller.play();
-                                        _startHideTimer();
                                       },
                                     ),
                                   ),
