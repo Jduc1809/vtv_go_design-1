@@ -118,17 +118,35 @@ class _StreamScreenState extends State<StreamScreen> {
   }
 
   Future<void> _initializeAndPlay(String url, {Duration? seekTo}) async {
-    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
-    _videoPlayerController = controller;
-    
-    await controller.initialize();
-    if (seekTo != null && controller.value.duration > seekTo) {
-      await controller.seekTo(seekTo);
-    }
-    
-    if (mounted) {
-      setState(() {});
-      controller.play();
+    final oldController = _videoPlayerController;
+
+    try {
+      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      await controller.initialize();
+      
+      if (seekTo != null && controller.value.duration > seekTo) {
+        await controller.seekTo(seekTo);
+      }
+      
+      if (mounted) {
+        setState(() {
+          _videoPlayerController = controller;
+        });
+        controller.play();
+        
+        // Dispose old controller after new one starts playing
+        if (oldController != null) {
+          oldController.pause();
+          oldController.dispose();
+        }
+      } else {
+        controller.dispose();
+        oldController?.dispose();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _errorMessage = "Không thể phát video: $e");
+      }
     }
   }
 
@@ -190,19 +208,12 @@ class _StreamScreenState extends State<StreamScreen> {
     }
 
     final currentPosition = await _videoPlayerController?.position ?? Duration.zero;
-    final oldController = _videoPlayerController;
 
     setState(() {
       _currentSelectedMode = selectedMode;
-      _videoPlayerController = null; // Clear to show loading
     });
 
-    try {
-      await _initializeAndPlay(targetUrl, seekTo: currentPosition);
-      oldController?.dispose();
-    } catch (e) {
-      if (mounted) setState(() => _errorMessage = "Lỗi khi chuyển chất lượng: $e");
-    }
+    await _initializeAndPlay(targetUrl, seekTo: currentPosition);
   }
 
   void _showSnackBar(String message, [Color? color]) {
@@ -241,7 +252,6 @@ class _StreamScreenState extends State<StreamScreen> {
     setState(() {
       _currentlyPlayingProgram = program;
       _errorMessage = null;
-      _videoPlayerController = null;
     });
 
     try {
