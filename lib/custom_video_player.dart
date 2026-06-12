@@ -174,150 +174,149 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   size: 20,
                                 ),
                                 onPressed: () {
-                                  final RenderBox? box =
-                                      buttonContext.findRenderObject()
-                                          as RenderBox?;
-                                  SharePlus.instance.share(
-                                    ShareParams(
-                                      text: widget.shareText,
-                                      sharePositionOrigin:
-                                          box!.localToGlobal(Offset.zero) &
-                                          box.size,
-                                    ),
-                                  );
+                                final RenderBox? box =
+                                    buttonContext.findRenderObject()
+                                        as RenderBox?;
+                                Share.share(
+                                  widget.shareText,
+                                  sharePositionOrigin:
+                                      box!.localToGlobal(Offset.zero) &
+                                      box.size,
+                                );
                                 },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                                );
+                                },
+                                ),
+                                ),
+                                ),
 
-                      // BOTTOM CONTROL BAR
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
+                                // BOTTOM CONTROL BAR
+                                Align(
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
                                 Colors.black.withValues(alpha: 0.8),
                                 Colors.transparent,
-                              ],
-                            ),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Row(
+                                ],
+                                ),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                                ),
+                                child: Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  IconButton(
-                                    icon: Icon(
+                                Row(
+                                children: [
+                                IconButton(
+                                  icon: Icon(
+                                    widget.controller.value.isPlaying
+                                        ? Icons.pause_rounded
+                                        : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                    size: 32,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
                                       widget.controller.value.isPlaying
-                                          ? Icons.pause_rounded
-                                          : Icons.play_arrow_rounded,
-                                      color: Colors.white,
-                                      size: 32,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        widget.controller.value.isPlaying
-                                            ? widget.controller.pause()
-                                            : widget.controller.play();
-                                      });
-                                      _startHideTimer();
-                                    },
+                                          ? widget.controller.pause()
+                                          : widget.controller.play();
+                                    });
+                                    _startHideTimer();
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    widget.controller.value.volume > 0
+                                        ? Icons.volume_up_rounded
+                                        : Icons.volume_down_rounded,
+                                    color: Colors.white,
+                                    size: 28,
                                   ),
-                                  IconButton(
-                                    icon: Icon(
+                                  onPressed: () {
+                                    setState(() {
                                       widget.controller.value.volume > 0
-                                          ? Icons.volume_up_rounded
-                                          : Icons.volume_down_rounded,
+                                          ? widget.controller.setVolume(0.0)
+                                          : widget.controller.setVolume(1.0);
+                                    });
+                                    _startHideTimer();
+                                  },
+                                ),
+                                if (!widget.isLive) ...[
+                                  Text(
+                                    _formatDuration(
+                                      widget.controller.value.position,
+                                    ),
+                                    style: const TextStyle(
                                       color: Colors.white,
-                                      size: 28,
+                                      fontSize: 13,
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        widget.controller.value.volume > 0
-                                            ? widget.controller.setVolume(0.0)
-                                            : widget.controller.setVolume(1.0);
-                                      });
-                                      _startHideTimer();
-                                    },
                                   ),
-                                  if (!widget.isLive) ...[
-                                    Text(
-                                      _formatDuration(
-                                        widget.controller.value.position,
-                                      ),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                      ),
+                                  const Text(
+                                    ' / ',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
                                     ),
-                                    const Text(
-                                      ' / ',
+                                  ),
+                                  Text(
+                                    _formatDuration(
+                                      widget.controller.value.duration,
+                                    ),
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ] else ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'TRỰC TIẾP',
                                       style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 13,
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    Text(
-                                      _formatDuration(
-                                        widget.controller.value.duration,
-                                      ),
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ] else ...[
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: const Text(
-                                        'TRỰC TIẾP',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  const Spacer(),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.settings,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: widget.onSettingsTap,
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      widget.isFullScreen
-                                          ? Icons.fullscreen_exit_rounded
-                                          : Icons.fullscreen_rounded,
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
-                                    onPressed: () => _toggleFullScreen(context),
                                   ),
                                 ],
-                              ),
-                              if (widget.controller.value.isInitialized)
+                                const Spacer(),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.settings,
+                                    color: Colors.white,
+                                  ),
+                                  onPressed: widget.onSettingsTap,
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    widget.isFullScreen
+                                        ? Icons.fullscreen_exit_rounded
+                                        : Icons.fullscreen_rounded,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                  onPressed: () => _toggleFullScreen(context),
+                                ),
+                                ],
+                                ),
+                                if (widget.controller.value.isInitialized &&
+                                !widget.isLive)
                                 SizedBox(
-                                  height: 20,
+                                height: 20,
                                   child: SliderTheme(
                                     data: SliderThemeData(
                                       trackHeight: 4.0,
