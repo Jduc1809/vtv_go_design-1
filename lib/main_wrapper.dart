@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'account_screen.dart';
 import 'channels_screen.dart';
 import 'home_screen.dart';
 import 'service_screen.dart';
-import 'account_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
