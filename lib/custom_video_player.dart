@@ -297,6 +297,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   ],
                                   const Spacer(),
                                   IconButton(
+                                    icon: const Icon(
+                                      Icons.settings,
+                                      color: Colors.white,
+                                    ),
+                                    onPressed: widget.onSettingsTap,
+                                  ),
+                                  IconButton(
                                     icon: Icon(
                                       widget.isFullScreen
                                           ? Icons.fullscreen_exit_rounded
@@ -305,13 +312,6 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                       size: 28,
                                     ),
                                     onPressed: () => _toggleFullScreen(context),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(
-                                      Icons.settings,
-                                      color: Colors.white,
-                                    ),
-                                    onPressed: widget.onSettingsTap,
                                   ),
                                 ],
                               ),
