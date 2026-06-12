@@ -21,10 +21,34 @@ class Program {
       title: json['title']?.toString() ?? 'Unknown Program',
       startDate: json['startDate']?.toString() ?? '',
       endDate: json['endDate']?.toString() ?? '',
-
       isLive: json['isLive'] == 1 || json['isLive'] == true,
       isPlayable: json['isPlayable'] == 1 || json['isPlayable'] == true,
     );
+  }
+
+  String get formattedStartTime {
+    if (startDate.isEmpty) return '--:--';
+    try {
+      String safeStr = startDate;
+      if (!safeStr.endsWith('Z') && !safeStr.contains('+')) {
+        safeStr += 'Z';
+      }
+      final DateTime parsedTime = DateTime.parse(safeStr).toLocal();
+      return "${parsedTime.hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return startDate.length >= 5 ? startDate.substring(0, 5) : startDate;
+    }
+  }
+
+  bool get isFuture {
+    try {
+      String safeStr = startDate;
+      if (!safeStr.endsWith('Z') && !safeStr.contains('+')) safeStr += 'Z';
+      final startTime = DateTime.parse(safeStr).toLocal();
+      return startTime.isAfter(DateTime.now());
+    } catch (e) {
+      return false;
+    }
   }
 }
 
