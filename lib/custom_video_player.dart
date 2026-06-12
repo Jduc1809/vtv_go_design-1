@@ -315,16 +315,68 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                   ),
                                 ],
                               ),
-                              if (!widget.isLive)
+                              if (!widget.isLive &&
+                                  widget.controller.value.isInitialized)
                                 SizedBox(
                                   height: 20,
-                                  child: VideoProgressIndicator(
-                                    widget.controller,
-                                    allowScrubbing: true,
-                                    colors: const VideoProgressColors(
-                                      playedColor: Colors.red,
-                                      bufferedColor: Colors.white24,
-                                      backgroundColor: Colors.white12,
+                                  child: SliderTheme(
+                                    data: SliderThemeData(
+                                      trackHeight: 4.0,
+                                      thumbShape: const RoundSliderThumbShape(
+                                        enabledThumbRadius: 7.0,
+                                      ),
+                                      overlayShape:
+                                          const RoundSliderOverlayShape(
+                                            overlayRadius: 16.0,
+                                          ),
+                                      activeTrackColor: Colors.red,
+                                      inactiveTrackColor: Colors.white,
+                                      thumbColor: Colors.red,
+                                      overlayColor: Colors.red.withAlpha(32),
+                                    ),
+                                    child: Slider(
+                                      min: 0.0,
+                                      max: widget
+                                          .controller
+                                          .value
+                                          .duration
+                                          .inMilliseconds
+                                          .toDouble(),
+                                      value: widget
+                                          .controller
+                                          .value
+                                          .position
+                                          .inMilliseconds
+                                          .toDouble()
+                                          .clamp(
+                                            0.0,
+                                            widget
+                                                .controller
+                                                .value
+                                                .duration
+                                                .inMilliseconds
+                                                .toDouble(),
+                                          ),
+
+                                      //When users drag the timeline
+                                      onChanged: (value) {
+                                        widget.controller.seekTo(
+                                          Duration(milliseconds: value.toInt()),
+                                        );
+                                      },
+
+                                      //When users grab the red dot
+                                      onChangeStart: (value) {
+                                        widget.controller
+                                            .pause(); //Pause the video while dragging
+                                        _hideTimer
+                                            ?.cancel(); //Make UI display the whole time
+                                      },
+
+                                      onChangeEnd: (value) {
+                                        widget.controller.play();
+                                        _startHideTimer();
+                                      },
                                     ),
                                   ),
                                 ),
