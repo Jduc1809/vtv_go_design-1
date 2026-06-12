@@ -31,7 +31,9 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
             backgroundColor: bgColor,
             body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
-        } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+        }
+
+        if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
           return const Scaffold(
             backgroundColor: bgColor,
             body: Center(
@@ -48,17 +50,31 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
           length: categories.length,
           child: Scaffold(
             backgroundColor: bgColor,
-            appBar: _buildAppBar(categories),
+            appBar: _ChannelsAppBar(categories: categories),
             body: TabBarView(
-              children: categories.map((category) => _buildCategoryGrid(category)).toList(),
+              children: categories
+                  .map((category) => _CategoryGrid(category: category))
+                  .toList(),
             ),
           ),
         );
       },
     );
   }
+}
 
-  PreferredSizeWidget _buildAppBar(List<ChannelCategory> categories) {
+class _ChannelsAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final List<ChannelCategory> categories;
+
+  const _ChannelsAppBar({required this.categories});
+
+  @override
+  Size get preferredSize => const Size.fromHeight(108); // 48 (title) + 60 (bottom)
+
+  @override
+  Widget build(BuildContext context) {
+    const bgColor = Color(0xFF141415);
+
     return AppBar(
       backgroundColor: bgColor,
       elevation: 0,
@@ -102,21 +118,46 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
               dividerColor: Colors.transparent,
               labelColor: Colors.white,
               unselectedLabelColor: Colors.grey[600],
-              labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
-              tabs: categories.map((c) => Tab(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(c.name)))).toList(),
+              labelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+              tabs: categories
+                  .map(
+                    (c) => Tab(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(c.name),
+                      ),
+                    ),
+                  )
+                  .toList(),
             ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildCategoryGrid(ChannelCategory category) {
+class _CategoryGrid extends StatelessWidget {
+  final ChannelCategory category;
+
+  const _CategoryGrid({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     int columns = 2;
-    if (screenWidth >= 900) columns = 4;
-    else if (screenWidth >= 600) columns = 3;
+    if (screenWidth >= 900) {
+      columns = 4;
+    } else if (screenWidth >= 600) {
+      columns = 3;
+    }
 
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -127,16 +168,27 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
         childAspectRatio: 16 / 9,
       ),
       itemCount: category.channels.length,
-      itemBuilder: (context, index) => _buildChannelCard(category.channels[index]),
+      itemBuilder: (context, index) {
+        return _ChannelGridCard(channel: category.channels[index]);
+      },
     );
   }
+}
 
-  Widget _buildChannelCard(Channel channel) {
+class _ChannelGridCard extends StatelessWidget {
+  final Channel channel;
+
+  const _ChannelGridCard({required this.channel});
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => StreamScreen(channel: channel)),
+          MaterialPageRoute(
+            builder: (context) => StreamScreen(channel: channel),
+          ),
         );
       },
       child: ClipRRect(
@@ -144,7 +196,6 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Display only one image: Thumbnail is prioritized, falling back to Logo
             Image.network(
               channel.thumbnail.isNotEmpty ? channel.thumbnail : channel.logo,
               fit: BoxFit.cover,
@@ -153,14 +204,31 @@ class _ChannelsScreenState extends State<ChannelsScreen> {
                 child: const Icon(Icons.tv, color: Colors.white54, size: 40),
               ),
             ),
-            // Gradient Overlay for UI consistency
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.7),
+                  ],
                 ),
+              ),
+            ),
+            Positioned(
+              bottom: 8,
+              left: 8,
+              right: 8,
+              child: Text(
+                channel.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

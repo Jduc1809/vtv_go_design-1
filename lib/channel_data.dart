@@ -1,54 +1,67 @@
 class Program {
   final String id;
   final String title;
-  final String startDate;
-  final String endDate;
+  final DateTime? startDateTime;
+  final DateTime? endDateTime;
+  final String rawStartDate;
+  final String rawEndDate;
   final bool isLive;
   final bool isPlayable;
 
-  Program({
+  const Program({
     required this.id,
     required this.title,
-    required this.startDate,
-    required this.endDate,
+    this.startDateTime,
+    this.endDateTime,
+    required this.rawStartDate,
+    required this.rawEndDate,
     required this.isLive,
     required this.isPlayable,
   });
 
   factory Program.fromJson(Map<String, dynamic> json) {
+    final rawStart = json['startDate']?.toString() ?? '';
+    final rawEnd = json['endDate']?.toString() ?? '';
+
     return Program(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? 'Unknown Program',
-      startDate: json['startDate']?.toString() ?? '',
-      endDate: json['endDate']?.toString() ?? '',
-      isLive: json['isLive'] == 1 || json['isLive'] == true,
-      isPlayable: json['isPlayable'] == 1 || json['isPlayable'] == true,
+      rawStartDate: rawStart,
+      rawEndDate: rawEnd,
+      startDateTime: _parseDateTime(rawStart),
+      endDateTime: _parseDateTime(rawEnd),
+      isLive: _parseBool(json['isLive']),
+      isPlayable: _parseBool(json['isPlayable']),
     );
   }
 
-  String get formattedStartTime {
-    if (startDate.isEmpty) return '--:--';
+  static DateTime? _parseDateTime(String dateStr) {
+    if (dateStr.isEmpty) return null;
     try {
-      String safeStr = startDate;
+      String safeStr = dateStr;
       if (!safeStr.endsWith('Z') && !safeStr.contains('+')) {
         safeStr += 'Z';
       }
-      final DateTime parsedTime = DateTime.parse(safeStr).toLocal();
-      return "${parsedTime.hour.toString().padLeft(2, '0')}:${parsedTime.minute.toString().padLeft(2, '0')}";
-    } catch (e) {
-      return startDate.length >= 5 ? startDate.substring(0, 5) : startDate;
+      return DateTime.parse(safeStr).toLocal();
+    } catch (_) {
+      return null;
     }
   }
 
-  bool get isFuture {
-    try {
-      String safeStr = startDate;
-      if (!safeStr.endsWith('Z') && !safeStr.contains('+')) safeStr += 'Z';
-      final startTime = DateTime.parse(safeStr).toLocal();
-      return startTime.isAfter(DateTime.now());
-    } catch (e) {
-      return false;
+  static bool _parseBool(dynamic value) {
+    return value == 1 || value == true;
+  }
+
+  String get formattedStartTime {
+    if (startDateTime == null) {
+      return rawStartDate.length >= 5 ? rawStartDate.substring(0, 5) : '--:--';
     }
+    return "${startDateTime!.hour.toString().padLeft(2, '0')}:${startDateTime!.minute.toString().padLeft(2, '0')}";
+  }
+
+  bool get isFuture {
+    if (startDateTime == null) return false;
+    return startDateTime!.isAfter(DateTime.now());
   }
 }
 
@@ -57,7 +70,7 @@ class CurrentProgram {
   final String startDate;
   final String endDate;
 
-  CurrentProgram({
+  const CurrentProgram({
     required this.title,
     required this.startDate,
     required this.endDate,
@@ -65,7 +78,7 @@ class CurrentProgram {
 
   factory CurrentProgram.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return CurrentProgram(title: 'Đang Chiếu', startDate: '', endDate: '');
+      return const CurrentProgram(title: 'Đang Chiếu', startDate: '', endDate: '');
     }
     return CurrentProgram(
       title: json['title'] ?? 'Live Broadcast',
@@ -80,15 +93,15 @@ class ChannelCategory {
   final String name;
   final List<Channel> channels;
 
-  ChannelCategory({
+  const ChannelCategory({
     required this.id,
     required this.name,
     required this.channels,
   });
 
   factory ChannelCategory.fromJson(Map<String, dynamic> json) {
-    var channelList = json['channels'] as List? ?? [];
-    List<Channel> parsedChannels = channelList
+    final channelList = json['channels'] as List? ?? [];
+    final parsedChannels = channelList
         .whereType<Map<String, dynamic>>()
         .map((c) => Channel.fromJson(c))
         .toList();
@@ -107,10 +120,9 @@ class Channel {
   final String logo;
   final int pressedIndex;
   final String thumbnail;
-
   final CurrentProgram currentProgram;
 
-  Channel({
+  const Channel({
     required this.id,
     required this.name,
     required this.logo,
@@ -138,7 +150,7 @@ class ChannelSourceMode {
   final bool isVip;
   final String? streamUrl;
 
-  ChannelSourceMode({
+  const ChannelSourceMode({
     required this.id,
     required this.name,
     required this.description,
@@ -149,21 +161,16 @@ class ChannelSourceMode {
   factory ChannelSourceMode.fromJson(Map<String, dynamic> json) {
     String? extractedUrl;
 
-    if (json['multiSource'] != null &&
-        json['multiSource'] is List &&
-        json['multiSource'].isNotEmpty) {
+    if (json['multiSource'] is List && (json['multiSource'] as List).isNotEmpty) {
       final multiSource = json['multiSource'][0];
-      if (multiSource['sources'] != null &&
-          multiSource['sources'] is List &&
-          multiSource['sources'].isNotEmpty) {
+      if (multiSource['sources'] is List && (multiSource['sources'] as List).isNotEmpty) {
         extractedUrl = multiSource['sources'][0]['url'];
       }
     }
 
     if ((extractedUrl == null || extractedUrl.isEmpty) &&
-        json['sources'] != null &&
         json['sources'] is List &&
-        json['sources'].isNotEmpty) {
+        (json['sources'] as List).isNotEmpty) {
       extractedUrl = json['sources'][0]['url'];
     }
 
@@ -175,7 +182,6 @@ class ChannelSourceMode {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? 'Auto',
       description: json['textDescription']?.toString() ?? '',
-      // Ensure we catch both integer '1' and boolean 'true'
       isVip: json['isVip'] == 1 || json['isVip'] == true,
       streamUrl: extractedUrl,
     );

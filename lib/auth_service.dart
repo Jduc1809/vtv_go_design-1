@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   static const String baseUrl = 'https://staging-api-vtvgo.vtvdigital.vn';
-  static const String SECRET = r'n5rBv+7W3juD4aC_#?E3tms$@x8n?DtY%';
+  static const String secret = r'n5rBv+7W3juD4aC_#?E3tms$@x8n?DtY%';
   static const String versionCode = '20260504';
   static const String platform = '3';
   static const String dtId = '6';
@@ -18,32 +19,30 @@ class AuthService {
   static String? currentAccessToken;
   static String? currentRefreshToken;
 
-  //Initial Guest Login
+  static const String _accessTokenKey = 'vtv_access_token';
+  static const String _refreshTokenKey = 'vtv_refresh_token';
 
   static Future<bool> loginAsGuest({bool forceNetwork = false}) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
 
     if (!forceNetwork) {
-      final String? savedToken = prefs.getString('vtv_access_token');
-      final String? savedRefreshToken = prefs.getString('vtv_refresh_token');
+      final savedToken = prefs.getString(_accessTokenKey);
+      final savedRefreshToken = prefs.getString(_refreshTokenKey);
 
       if (savedToken != null && savedRefreshToken != null) {
         currentAccessToken = savedToken;
         currentRefreshToken = savedRefreshToken;
-        print('Reading from device: Found tokens');
+        log('Auth: Tokens found in storage');
         return true;
       }
     }
 
-    print('login to network');
+    log('Auth: Attempting network login...');
 
-    final String rawSignatureString =
-        '$deviceId&&$deviceName&&$versionCode&&$platform&&$SECRET';
-    final String signature = md5
-        .convert(utf8.encode(rawSignatureString))
-        .toString();
+    final rawSignatureString = '$deviceId&&$deviceName&&$versionCode&&$platform&&$secret';
+    final signature = md5.convert(utf8.encode(rawSignatureString)).toString();
 
-    final Map<String, String> bodyMap = {
+    final bodyMap = {
       'deviceId': deviceId,
       'deviceName': deviceName,
       'versionCode': versionCode,
@@ -62,9 +61,7 @@ class AuthService {
     };
 
     try {
-      final Uri url = Uri.parse(
-        '$baseUrl/user/nt/api/v1/auth/enter-guest',
-      ).replace(queryParameters: bodyMap);
+      final url = Uri.parse('$baseUrl/user/nt/api/v1/auth/enter-guest').replace(queryParameters: bodyMap);
 
       final response = await http.post(
         url,
@@ -76,56 +73,51 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final jsonResponse = json.decode(response.body);
 
         if (jsonResponse['status'] == 0) {
           currentAccessToken = jsonResponse['data']['accessToken'];
-          currentRefreshToken =
-              jsonResponse['data']['refreshToken']; // 🔥 Save it!
+          currentRefreshToken = jsonResponse['data']['refreshToken'];
 
           if (currentAccessToken != null && currentRefreshToken != null) {
-            await prefs.setString('vtv_access_token', currentAccessToken!);
-            await prefs.setString('vtv_refresh_token', currentRefreshToken!);
-            print('Saved new tokens ');
+            await prefs.setString(_accessTokenKey, currentAccessToken!);
+            await prefs.setString(_refreshTokenKey, currentRefreshToken!);
+            log('Auth: New tokens saved');
           }
           return true;
         }
       }
-      return false;
     } catch (e) {
-      print('Auth Network Exception: $e');
-      return false;
+      log('Auth: Network Exception: $e');
     }
+    return false;
   }
 
   static Future<bool> refreshExpiredToken() async {
-    if (currentRefreshToken == null) {
-      // If we don't have a refresh token, force a complete fresh login
+    final refreshToken = currentRefreshToken;
+    if (refreshToken == null) {
       return await loginAsGuest(forceNetwork: true);
     }
 
-    print('Auth: refreshing expired token');
+    log('Auth: Refreshing expired token...');
 
-    final String rawSignatureString =
-        '$deviceId&&$deviceName&&$versionCode&&$platform&&$currentRefreshToken&&$SECRET';
-    final String signature = md5
-        .convert(utf8.encode(rawSignatureString))
-        .toString();
+    final rawSignatureString = '$deviceId&&$deviceName&&$versionCode&&$platform&&$refreshToken&&$secret';
+    final signature = md5.convert(utf8.encode(rawSignatureString)).toString();
 
-    final Map<String, String> bodyMap = {
+    final bodyMap = {
       'deviceId': deviceId,
       'deviceName': deviceName,
       'platform': platform,
       'deviceType': '3',
       'dtId': dtId,
       'spId': spId,
-      'token': currentRefreshToken!,
+      'token': refreshToken,
       'signature': signature,
       'clientId': clientId,
     };
 
     try {
-      final Uri url = Uri.parse('$baseUrl/user/nt/api/v1/auth/refresh-token');
+      final url = Uri.parse('$baseUrl/user/nt/api/v1/auth/refresh-token');
 
       final response = await http.post(
         url,
@@ -137,7 +129,7 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final jsonResponse = json.decode(response.body);
 
         if (jsonResponse['status'] == 0) {
           currentAccessToken = jsonResponse['data']['accessToken'];
@@ -146,20 +138,19 @@ class AuthService {
             currentRefreshToken = jsonResponse['data']['refreshToken'];
           }
 
-          final SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('vtv_access_token', currentAccessToken!);
-          await prefs.setString('vtv_refresh_token', currentRefreshToken!);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_accessTokenKey, currentAccessToken!);
+          await prefs.setString(_refreshTokenKey, currentRefreshToken!);
 
-          print('Token refreshed');
+          log('Auth: Token successfully refreshed');
           return true;
         }
       }
-
-      print('Refresh token rejected. Forcing hard login...');
+      log('Auth: Refresh token rejected, forcing hard login');
       return await loginAsGuest(forceNetwork: true);
     } catch (e) {
-      print('Refresh Network Exception: $e');
-      return false;
+      log('Auth: Refresh Network Exception: $e');
     }
+    return false;
   }
 }

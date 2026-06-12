@@ -11,7 +11,7 @@ class AccountScreen extends StatelessWidget {
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: bgColor,
-        title: Text(
+        title: const Text(
           'Tài Khoản',
           style: TextStyle(
             color: Colors.white,

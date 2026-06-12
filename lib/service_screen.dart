@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// ignore: camel_case_types
 class ServiceScreen extends StatelessWidget {
   const ServiceScreen({super.key});
 
@@ -12,7 +11,7 @@ class ServiceScreen extends StatelessWidget {
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: bgColor,
-        title: Text(
+        title: const Text(
           'Cổng Dịch Vụ',
           style: TextStyle(
             color: Colors.white,
@@ -42,7 +41,7 @@ class ServiceScreen extends StatelessWidget {
             Icon(Icons.construction, size: 64, color: Colors.grey[800]),
             const SizedBox(height: 16),
             const Text(
-              'Trang cổng dịnh vụ đang được xây dựng...',
+              'Trang cổng dịch vụ đang được xây dựng...',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),

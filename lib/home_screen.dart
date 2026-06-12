@@ -17,80 +17,55 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
 
+  void _loadData() {
     _homeDataFuture = ApiService.fetchHomeData();
   }
 
   Future<void> _refreshData() async {
     setState(() {
-      _homeDataFuture = ApiService.fetchHomeData();
+      _loadData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    const Color pureBlack = Colors.black;
+    const Color accentColor = Colors.redAccent;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: pureBlack,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: pureBlack,
         elevation: 0,
         title: const Text(
           'VTV Go',
           style: TextStyle(
-            color: Colors.redAccent,
+            color: accentColor,
             fontWeight: FontWeight.bold,
             fontSize: 24,
           ),
         ),
       ),
       body: RefreshIndicator(
-        color: Colors.redAccent,
+        color: accentColor,
         backgroundColor: Colors.grey[900],
         onRefresh: _refreshData,
         child: FutureBuilder<List<ChannelCategory>>(
           future: _homeDataFuture,
           builder: (context, snapshot) {
-            // 1. Loading State
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
-                child: CircularProgressIndicator(color: Colors.redAccent),
+                child: CircularProgressIndicator(color: accentColor),
               );
             }
 
-            // 2. Error State
             if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.red,
-                      size: 50,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Lỗi tải dữ liệu:\n${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                      ),
-                      onPressed: _refreshData,
-                      child: const Text(
-                        'Thử Lại',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return _buildErrorState(snapshot.error.toString());
             }
 
-            // 3. Empty State
             final categories = snapshot.data ?? [];
             if (categories.isEmpty) {
               return const Center(
@@ -101,13 +76,11 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
 
-            // 4. Success State! Build the Netflix-style lists
             return ListView.builder(
               padding: const EdgeInsets.only(bottom: 30),
               itemCount: categories.length,
               itemBuilder: (context, index) {
-                final category = categories[index];
-                return _buildCategoryRow(category);
+                return _CategoryRow(category: categories[index]);
               },
             );
           },
@@ -116,11 +89,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildCategoryRow(ChannelCategory category) {
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 50),
+          const SizedBox(height: 16),
+          Text(
+            'Lỗi tải dữ liệu:\n$error',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: _refreshData,
+            child: const Text('Thử Lại', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryRow extends StatelessWidget {
+  final ChannelCategory category;
+
+  const _CategoryRow({required this.category});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Category Title
         Padding(
           padding: const EdgeInsets.only(left: 16.0, top: 24.0, bottom: 12.0),
           child: Text(
@@ -132,27 +134,34 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Horizontal Scrolling Row of Channels
         SizedBox(
-          height: 140, // Height of the channel cards
+          height: 140,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             itemCount: category.channels.length,
             itemBuilder: (context, index) {
-              final channel = category.channels[index];
-              return _buildChannelCard(channel);
+              return _ChannelMiniCard(channel: category.channels[index]);
             },
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildChannelCard(Channel channel) {
+class _ChannelMiniCard extends StatelessWidget {
+  final Channel channel;
+
+  const _ChannelMiniCard({required this.channel});
+
+  @override
+  Widget build(BuildContext context) {
+    const cardColor = Color(0xFF2C2C2E);
+    final borderColor = Colors.grey[800]!;
+
     return GestureDetector(
       onTap: () {
-        // 🔥 Navigate to your completed StreamScreen when tapped!
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -164,14 +173,13 @@ class _HomeScreenState extends State<HomeScreen> {
         width: 140,
         margin: const EdgeInsets.symmetric(horizontal: 6.0),
         decoration: BoxDecoration(
-          color: const Color(0xFF2C2C2E),
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey[800]!),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Channel Logo (Using a safe fallback if the image fails to load)
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
@@ -184,7 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Current Program Title Bar
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),

@@ -300,7 +300,13 @@ class _StreamScreenState extends State<StreamScreen> {
       ),
       body: Column(
         children: [
-          _buildVideoPlayerSection(pureBlack),
+          _VideoSection(
+            errorMessage: _errorMessage,
+            controller: _videoPlayerController,
+            isLive: _currentlyPlayingProgram == null,
+            onSettingsTap: _showResolutionMenu,
+            channelName: widget.channel.name,
+          ),
           Expanded(
             child: Container(
               width: double.infinity,
@@ -311,7 +317,7 @@ class _StreamScreenState extends State<StreamScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildDragHandle(),
+                  const _DragHandle(),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                     child: Text(
@@ -319,9 +325,20 @@ class _StreamScreenState extends State<StreamScreen> {
                       style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  _buildDateSelector(),
+                  _DateSelector(
+                    availableDates: _availableDates,
+                    selectedDate: _selectedDate,
+                    onDateSelected: _fetchScheduleForDate,
+                    formatDate: _formatDate,
+                  ),
                   const SizedBox(height: 8),
-                  Expanded(child: _buildScheduleList()),
+                  Expanded(
+                    child: _ScheduleList(
+                      futureSchedule: _futureSchedule,
+                      currentlyPlayingProgram: _currentlyPlayingProgram,
+                      onProgramTap: _playProgramVOD,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -330,24 +347,41 @@ class _StreamScreenState extends State<StreamScreen> {
       ),
     );
   }
+}
 
-  Widget _buildVideoPlayerSection(Color pureBlack) {
+class _VideoSection extends StatelessWidget {
+  final String? errorMessage;
+  final VideoPlayerController? controller;
+  final bool isLive;
+  final VoidCallback onSettingsTap;
+  final String channelName;
+
+  const _VideoSection({
+    required this.errorMessage,
+    required this.controller,
+    required this.isLive,
+    required this.onSettingsTap,
+    required this.channelName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: pureBlack,
+      color: Colors.black,
       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
-      child: _errorMessage != null
+      child: errorMessage != null
           ? AspectRatio(
               aspectRatio: 16 / 9,
-              child: Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+              child: Center(child: Text(errorMessage!, style: const TextStyle(color: Colors.red))),
             )
-          : _videoPlayerController != null && _videoPlayerController!.value.isInitialized
+          : controller != null && controller!.value.isInitialized
               ? Center(
                   child: CustomVideoPlayer(
-                    controller: _videoPlayerController!,
-                    isLive: _currentlyPlayingProgram == null,
-                    onSettingsTap: _showResolutionMenu,
-                    shareText: 'Xem ${widget.channel.name} trên VTV Go!',
+                    controller: controller!,
+                    isLive: isLive,
+                    onSettingsTap: onSettingsTap,
+                    shareText: 'Xem $channelName trên VTV Go!',
                   ),
                 )
               : const AspectRatio(
@@ -356,8 +390,13 @@ class _StreamScreenState extends State<StreamScreen> {
                 ),
     );
   }
+}
 
-  Widget _buildDragHandle() {
+class _DragHandle extends StatelessWidget {
+  const _DragHandle();
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Container(
         margin: const EdgeInsets.only(top: 12, bottom: 8),
@@ -370,21 +409,37 @@ class _StreamScreenState extends State<StreamScreen> {
       ),
     );
   }
+}
 
-  Widget _buildDateSelector() {
+class _DateSelector extends StatelessWidget {
+  final List<DateTime> availableDates;
+  final DateTime selectedDate;
+  final Function(DateTime) onDateSelected;
+  final String Function(DateTime) formatDate;
+
+  const _DateSelector({
+    required this.availableDates,
+    required this.selectedDate,
+    required this.onDateSelected,
+    required this.formatDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     const Color cardColor = Color(0xFF2C2C2E);
+
     return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: _availableDates.length,
+        itemCount: availableDates.length,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemBuilder: (context, index) {
-          final date = _availableDates[index];
-          final isSelected = date.day == _selectedDate.day && date.month == _selectedDate.month;
+          final date = availableDates[index];
+          final isSelected = date.day == selectedDate.day && date.month == selectedDate.month;
           return GestureDetector(
             onTap: () {
-              if (!isSelected) _fetchScheduleForDate(date);
+              if (!isSelected) onDateSelected(date);
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
@@ -407,7 +462,7 @@ class _StreamScreenState extends State<StreamScreen> {
               ),
               child: Center(
                 child: Text(
-                  _formatDate(date),
+                  formatDate(date),
                   style: TextStyle(
                     color: isSelected ? Colors.white : Colors.grey[400],
                     fontWeight: FontWeight.bold,
@@ -421,10 +476,23 @@ class _StreamScreenState extends State<StreamScreen> {
       ),
     );
   }
+}
 
-  Widget _buildScheduleList() {
+class _ScheduleList extends StatelessWidget {
+  final Future<List<Program>> futureSchedule;
+  final Program? currentlyPlayingProgram;
+  final Function(Program) onProgramTap;
+
+  const _ScheduleList({
+    required this.futureSchedule,
+    required this.currentlyPlayingProgram,
+    required this.onProgramTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<List<Program>>(
-      future: _futureSchedule,
+      future: futureSchedule,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator(color: Colors.orange));
@@ -444,19 +512,35 @@ class _StreamScreenState extends State<StreamScreen> {
           initialScrollIndex: targetIndex,
           padding: const EdgeInsets.only(bottom: 24, top: 8),
           itemCount: schedule.length,
-          itemBuilder: (context, index) => _buildProgramItem(schedule[index]),
+          itemBuilder: (context, index) => _ProgramItem(
+            program: schedule[index],
+            isPlaying: (currentlyPlayingProgram == null && schedule[index].isLive) || (currentlyPlayingProgram?.id == schedule[index].id),
+            onTap: () => onProgramTap(schedule[index]),
+          ),
         );
       },
     );
   }
+}
 
-  Widget _buildProgramItem(Program program) {
+class _ProgramItem extends StatelessWidget {
+  final Program program;
+  final bool isPlaying;
+  final VoidCallback onTap;
+
+  const _ProgramItem({
+    required this.program,
+    required this.isPlaying,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     const Color cardColor = Color(0xFF2C2C2E);
-    final bool isPlaying = (_currentlyPlayingProgram == null && program.isLive) || (_currentlyPlayingProgram?.id == program.id);
     final bool isRedText = isPlaying || program.isLive;
 
     return GestureDetector(
-      onTap: () => _playProgramVOD(program),
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         padding: const EdgeInsets.all(16),
@@ -492,14 +576,27 @@ class _StreamScreenState extends State<StreamScreen> {
             const SizedBox(width: 12),
             Container(width: 1, height: 40, color: Colors.grey[700]),
             const SizedBox(width: 16),
-            _buildPlayStatus(isPlaying, program.isLive, isRedText),
+            _PlayStatus(isPlaying: isPlaying, isLive: program.isLive, isRedText: isRedText),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildPlayStatus(bool isPlaying, bool isLive, bool isRedText) {
+class _PlayStatus extends StatelessWidget {
+  final bool isPlaying;
+  final bool isLive;
+  final bool isRedText;
+
+  const _PlayStatus({
+    required this.isPlaying,
+    required this.isLive,
+    required this.isRedText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
