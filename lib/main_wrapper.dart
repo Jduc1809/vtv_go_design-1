@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'channels_screen.dart';
 import 'home_screen.dart';
 import 'service_screen.dart';
+import 'account_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -19,9 +20,7 @@ class _MainWrapperState extends State<MainWrapper> {
     const HomeScreen(), // Index 0: Trang Chủ
     const ChannelsScreen(), // Index 1: Kênh
     const ServiceScreen(), // Index 2: Cổng Dịch Vụ
-    const Center(
-      child: Text('Tài Khoản', style: TextStyle(color: Colors.white)),
-    ), // Index 3 Placeholder
+    const AccountScreen(), // Index 3: Tài Khoản
   ];
 
   @override
