@@ -209,7 +209,7 @@ class _StreamScreenState extends State<StreamScreen> {
 
     if (selectedMode.isVip) {
       _showSnackBar(
-        '${selectedMode.name} yêu cầu tài khoản Premium VIP!',
+        '${selectedMode.name} yêu cầu tài khoản Premium!',
         Colors.amber[800],
       );
       return;

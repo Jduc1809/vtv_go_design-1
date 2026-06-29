@@ -79,20 +79,41 @@ class CurrentProgram {
   });
 
   factory CurrentProgram.fromJson(Map<String, dynamic>? json) {
+    // THE PLUTO TV ALGORITHM:
+    // Derives a real-time completion ratio (8% to 95%) based on the device clock
+    final now = DateTime.now();
+    final int secondsIntoBlock = (now.minute % 30 * 60) + now.second;
+    final int syntheticProgress = ((secondsIntoBlock / 1800) * 100)
+        .clamp(8, 95)
+        .toInt();
+
     if (json == null) {
-      return const CurrentProgram(
-        title: 'Đang Chiếu',
+      return CurrentProgram(
+        title: 'Chương trình trực tiếp',
         startDate: '',
         endDate: '',
-        progressPercent: 0,
+        progressPercent: syntheticProgress, // <-- INSTANT CRIMSON PAINT
       );
     }
-    print('DEBUG: CurrentProgram JSON keys: ${json.keys}');
+
+    int progress = 0;
+    final rawProgress = json['progressPercent'];
+    if (rawProgress is num) {
+      progress = rawProgress.toInt();
+    } else if (rawProgress is String) {
+      progress = int.tryParse(rawProgress.replaceAll('%', '').trim()) ?? 0;
+    }
+
+    // If the server sends a dead 0% payload, override it with the live clock!
+    if (progress <= 0) {
+      progress = syntheticProgress;
+    }
+
     return CurrentProgram(
-      title: json['name'] ?? 'Live Broadcast',
-      startDate: json['startIsoTime'] ?? '',
-      endDate: json['endIsoTime'] ?? '',
-      progressPercent: json['progressPercent'] ?? 0,
+      title: json['name']?.toString() ?? 'Chương trình trực tiếp',
+      startDate: json['startIsoTime']?.toString() ?? '',
+      endDate: json['endIsoTime']?.toString() ?? '',
+      progressPercent: progress,
     );
   }
 }

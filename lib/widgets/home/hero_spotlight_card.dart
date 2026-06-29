@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
 import '../../stream_screen.dart';
+import '../epg_bar.dart';
 
 class HeroSpotlightCard extends StatelessWidget {
   final Channel channel;
@@ -67,14 +68,14 @@ class HeroSpotlightCard extends StatelessWidget {
                 ),
               ),
 
-              // Layer 3: UI Overlays
+              // Layer 3: UI Overlays (Text & Actions)
               Padding(
                 padding: const EdgeInsets.all(18.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Top Row
+                    // Top Row: Badges
                     Row(
                       children: [
                         Container(
@@ -119,70 +120,84 @@ class HeroSpotlightCard extends StatelessWidget {
                       ],
                     ),
 
-                    // Bottom Row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text(
-                                'Đang phát sóng:',
-                                style: TextStyle(
-                                  color: AppColors.textGrey,
-                                  fontSize: 11,
+                    // Bottom Row: Metadata & CTA Button
+                    Padding(
+                      // Add a tiny bottom padding so text doesn't touch the EPG line
+                      padding: const EdgeInsets.only(bottom: 6.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text(
+                                  'Đang phát sóng:',
+                                  style: TextStyle(
+                                    color: AppColors.textGrey,
+                                    fontSize: 11,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                channel.currentProgram.title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.2,
+                                const SizedBox(height: 2),
+                                Text(
+                                  channel.currentProgram.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.2,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.play_arrow_rounded,
-                                color: Colors.black,
-                                size: 20,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Xem Ngay',
-                                style: TextStyle(
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.play_arrow_rounded,
                                   color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                                  size: 20,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Text(
+                                  'Xem Ngay',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
+                ),
+              ),
+
+              // Layer 4: Edge-to-Edge OTT Progress Bar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: EpgBar(
+                  progress: channel.currentProgram.progressPercent / 100.0,
                 ),
               ),
             ],
