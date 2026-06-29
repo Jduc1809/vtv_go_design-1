@@ -369,7 +369,7 @@ class _VideoSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.black,
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.45),
       child: errorMessage != null
           ? AspectRatio(
               aspectRatio: 16 / 9,
@@ -457,8 +457,8 @@ class _DateSelector extends StatelessWidget {
                       )
                     : null,
                 boxShadow: isSelected
-                    ? [BoxShadow(color: Colors.deepOrange.withValues(alpha: 0.4), blurRadius: 8, offset: const Offset(0, 4))]
-                    : [],
+                    ? const [BoxShadow(color: Color(0x66FF5722), blurRadius: 8, offset: Offset(0, 4))]
+                    : const [],
               ),
               child: Center(
                 child: Text(
@@ -547,7 +547,7 @@ class _ProgramItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: isPlaying ? Border.all(color: Colors.red.withValues(alpha: 0.5), width: 1) : null,
+          border: isPlaying ? Border.all(color: const Color(0x80F44336), width: 1) : null,
         ),
         child: Row(
           children: [
@@ -602,10 +602,10 @@ class _PlayStatus extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 2))],
           ),
           child: Icon(isPlaying ? Icons.play_arrow : Icons.play_arrow_rounded, color: Colors.black, size: 20),
         ),
