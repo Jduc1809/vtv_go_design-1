@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
 import '../../channel_data.dart';
-import '../../stream_screen.dart';
 import '../../core/constants/app_colors.dart';
+import '../../live_progress_bar.dart';
+import '../../stream_screen.dart';
 
 class ChannelMiniCard extends StatelessWidget {
   final Channel channel;
@@ -52,11 +54,8 @@ class ChannelMiniCard extends StatelessWidget {
                           strokeWidth: 2,
                         ),
                       ),
-                      errorWidget: (context, url, error) => const Icon(
-                        Icons.tv,
-                        color: Colors.grey,
-                        size: 40,
-                      ),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.tv, color: Colors.grey, size: 40),
                     ),
                   ),
                 ),
@@ -73,12 +72,25 @@ class ChannelMiniCard extends StatelessWidget {
                       bottomRight: Radius.circular(12),
                     ),
                   ),
-                  child: Text(
-                    channel.currentProgram.title,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.grey, fontSize: 11),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        channel.currentProgram.title,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      LiveProgressBar(
+                        startTime: channel.currentProgram.startDate,
+                        endTime: channel.currentProgram.endDate,
+                      ),
+                    ],
                   ),
                 ),
               ],

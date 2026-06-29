@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../channel_data.dart';
 import 'channel_mini_card.dart';
 
