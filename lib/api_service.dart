@@ -53,16 +53,21 @@ class ApiService {
     }
 
     final queryParams = {..._defaultParams, ...?extraQueryParameters};
-    final url = Uri.parse('$baseUrl$endpoint').replace(queryParameters: queryParams);
+    final url = Uri.parse(
+      '$baseUrl$endpoint',
+    ).replace(queryParameters: queryParams);
 
     try {
       final response = await http.get(
         url,
-        headers: {
-          'Authorization': token,
-          'Accept': 'application/json',
-        },
+        headers: {'Authorization': token, 'Accept': 'application/json'},
       );
+
+      log('API RESPONSE');
+      log('URL: $url');
+      log('STATUS: ${response.statusCode}');
+      final decodedJson = json.decode(response.body);
+      log('BODY:\n${const JsonEncoder.withIndent('  ').convert(decodedJson)}');
 
       if (response.statusCode == 200) {
         log('API call success: $endpoint');
@@ -70,7 +75,10 @@ class ApiService {
       } else if (response.statusCode == 401) {
         log("Token expired, attempting refresh...");
         if (await AuthService.refreshExpiredToken()) {
-          return await _get(endpoint, extraQueryParameters: extraQueryParameters);
+          return await _get(
+            endpoint,
+            extraQueryParameters: extraQueryParameters,
+          );
         }
       } else {
         log("API error: ${response.statusCode} for $endpoint");
@@ -89,11 +97,17 @@ class ApiService {
             final List<dynamic> normal = data['channels'] ?? [];
 
             final allCategories = [
-              ...favs.whereType<Map<String, dynamic>>().map(ChannelCategory.fromJson),
-              ...normal.whereType<Map<String, dynamic>>().map(ChannelCategory.fromJson),
+              ...favs.whereType<Map<String, dynamic>>().map(
+                ChannelCategory.fromJson,
+              ),
+              ...normal.whereType<Map<String, dynamic>>().map(
+                ChannelCategory.fromJson,
+              ),
             ];
 
-            return allCategories.where((cat) => cat.channels.isNotEmpty).toList();
+            return allCategories
+                .where((cat) => cat.channels.isNotEmpty)
+                .toList();
           },
         ) ??
         [];
@@ -111,17 +125,26 @@ class ApiService {
     DateTime? targetDate,
   }) async {
     final baseDate = (targetDate ?? DateTime.now()).toUtc();
-    final startIsoDate =
-        DateTime.utc(baseDate.year, baseDate.month, baseDate.day, 0, 0, 0).toIso8601String();
-    final endIsoDate =
-        DateTime.utc(baseDate.year, baseDate.month, baseDate.day, 23, 59, 59).toIso8601String();
+    final startIsoDate = DateTime.utc(
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      0,
+      0,
+      0,
+    ).toIso8601String();
+    final endIsoDate = DateTime.utc(
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      23,
+      59,
+      59,
+    ).toIso8601String();
 
     return await _request<List<Program>>(
           '/live-channel/api/v1/channels/$channelId/programs',
-          params: {
-            'startIsoDate': startIsoDate,
-            'endIsoDate': endIsoDate,
-          },
+          params: {'startIsoDate': startIsoDate, 'endIsoDate': endIsoDate},
           fromJson: (data) {
             if (data is! List) return [];
             return data
