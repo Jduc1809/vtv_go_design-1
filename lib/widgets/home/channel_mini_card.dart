@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
-import '../../live_progress_bar.dart';
 import '../../stream_screen.dart';
 
 class ChannelMiniCard extends StatelessWidget {
@@ -72,25 +71,12 @@ class ChannelMiniCard extends StatelessWidget {
                       bottomRight: Radius.circular(12),
                     ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        channel.currentProgram.title,
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 11,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      LiveProgressBar(
-                        progress:
-                            (channel.currentProgram.progressPercent / 100),
-                      ),
-                    ],
+                  child: Text(
+                    channel.currentProgram.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 11),
                   ),
                 ),
               ],

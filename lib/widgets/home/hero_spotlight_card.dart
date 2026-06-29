@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
-import '../../live_progress_bar.dart';
 import '../../stream_screen.dart';
 
 class HeroSpotlightCard extends StatelessWidget {
@@ -148,17 +147,10 @@ class HeroSpotlightCard extends StatelessWidget {
                                   height: 1.2,
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              LiveProgressBar(
-                                progress:
-                                    (channel.currentProgram.progressPercent /
-                                    100),
-                              ),
                             ],
                           ),
                         ),
                         const SizedBox(width: 12),
-
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,

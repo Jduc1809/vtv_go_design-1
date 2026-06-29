@@ -87,8 +87,9 @@ class CurrentProgram {
         progressPercent: 0,
       );
     }
+    print('DEBUG: CurrentProgram JSON keys: ${json.keys}');
     return CurrentProgram(
-      title: json['title'] ?? 'Live Broadcast',
+      title: json['name'] ?? 'Live Broadcast',
       startDate: json['startIsoTime'] ?? '',
       endDate: json['endIsoTime'] ?? '',
       progressPercent: json['progressPercent'] ?? 0,
