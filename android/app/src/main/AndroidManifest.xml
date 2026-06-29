@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     
     <application
-        android:label="vtv_go"
+        android:label="VTV Go"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
