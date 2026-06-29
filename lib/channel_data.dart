@@ -66,15 +66,15 @@ class Program {
 }
 
 class CurrentProgram {
-  final String title;
-  final String startDate;
-  final String endDate;
+  final String name;
+  final String startIsoTime;
+  final String endIsoTime;
   final int progressPercent;
 
   const CurrentProgram({
-    required this.title,
-    required this.startDate,
-    required this.endDate,
+    required this.name,
+    required this.startIsoTime,
+    required this.endIsoTime,
     required this.progressPercent,
   });
 
@@ -89,9 +89,9 @@ class CurrentProgram {
 
     if (json == null) {
       return CurrentProgram(
-        title: 'Chương trình trực tiếp',
-        startDate: '',
-        endDate: '',
+        name: 'Chương trình trực tiếp',
+        startIsoTime: '',
+        endIsoTime: '',
         progressPercent: syntheticProgress, // <-- INSTANT CRIMSON PAINT
       );
     }
@@ -110,9 +110,9 @@ class CurrentProgram {
     }
 
     return CurrentProgram(
-      title: json['name']?.toString() ?? 'Chương trình trực tiếp',
-      startDate: json['startIsoTime']?.toString() ?? '',
-      endDate: json['endIsoTime']?.toString() ?? '',
+      name: json['name']?.toString() ?? 'Chương trình trực tiếp',
+      startIsoTime: json['startIsoTime']?.toString() ?? '',
+      endIsoTime: json['endIsoTime']?.toString() ?? '',
       progressPercent: progress,
     );
   }

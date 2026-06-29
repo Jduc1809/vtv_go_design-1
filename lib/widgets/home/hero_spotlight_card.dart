@@ -141,7 +141,7 @@ class HeroSpotlightCard extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  channel.currentProgram.title,
+                                  channel.currentProgram.name,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(

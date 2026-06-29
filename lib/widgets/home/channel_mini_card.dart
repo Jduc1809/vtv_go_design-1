@@ -75,7 +75,7 @@ class ChannelMiniCard extends StatelessWidget {
                           // 4px bottom clearance keeps the text off the red track
                           padding: const EdgeInsets.fromLTRB(8, 6, 8, 4),
                           child: Text(
-                            channel.currentProgram.title,
+                            channel.currentProgram.name,
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
