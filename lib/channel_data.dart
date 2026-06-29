@@ -69,21 +69,29 @@ class CurrentProgram {
   final String title;
   final String startDate;
   final String endDate;
+  final int progressPercent;
 
   const CurrentProgram({
     required this.title,
     required this.startDate,
     required this.endDate,
+    required this.progressPercent,
   });
 
   factory CurrentProgram.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return const CurrentProgram(title: 'Đang Chiếu', startDate: '', endDate: '');
+      return const CurrentProgram(
+        title: 'Đang Chiếu',
+        startDate: '',
+        endDate: '',
+        progressPercent: 0,
+      );
     }
     return CurrentProgram(
       title: json['title'] ?? 'Live Broadcast',
-      startDate: json['startTime'] ?? '',
-      endDate: json['endTime'] ?? '',
+      startDate: json['startIsoTime'] ?? '',
+      endDate: json['endIsoTime'] ?? '',
+      progressPercent: json['progressPercent'] ?? 0,
     );
   }
 }
@@ -161,9 +169,11 @@ class ChannelSourceMode {
   factory ChannelSourceMode.fromJson(Map<String, dynamic> json) {
     String? extractedUrl;
 
-    if (json['multiSource'] is List && (json['multiSource'] as List).isNotEmpty) {
+    if (json['multiSource'] is List &&
+        (json['multiSource'] as List).isNotEmpty) {
       final multiSource = json['multiSource'][0];
-      if (multiSource['sources'] is List && (multiSource['sources'] as List).isNotEmpty) {
+      if (multiSource['sources'] is List &&
+          (multiSource['sources'] as List).isNotEmpty) {
         extractedUrl = multiSource['sources'][0]['url'];
       }
     }

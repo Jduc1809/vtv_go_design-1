@@ -1,10 +1,16 @@
 class EpgService {
   static double calculateProgress(String startTimeStr, String endTimeStr) {
     try {
-      final now = DateTime.now();
-      final start = _parseTimeToday(startTimeStr, now);
-      var end = _parseTimeToday(endTimeStr, now);
+      if (startTimeStr.isEmpty || endTimeStr.isEmpty) return 0.0;
 
+      final now = DateTime.now();
+
+      // Use Dart's built-in parsing which handles ISO strings
+      final start =
+          DateTime.tryParse(startTimeStr) ?? _parseLegacy(startTimeStr, now);
+      var end = DateTime.tryParse(endTimeStr) ?? _parseLegacy(endTimeStr, now);
+
+      // Midnight rollover logic
       if (end.isBefore(start)) {
         end = end.add(const Duration(days: 1));
       }
@@ -22,12 +28,15 @@ class EpgService {
     }
   }
 
-  // Parameter renamed to 'baseDate' to be 100% bulletproof
-  static DateTime _parseTimeToday(String timeStr, DateTime baseDate) {
+  // Fallback for HH:mm strings
+  static DateTime _parseLegacy(String timeStr, DateTime baseDate) {
     final parts = timeStr.split(':');
-    final hour = int.parse(parts[0]);
-    final minute = int.parse(parts[1]);
-
-    return DateTime(baseDate.year, baseDate.month, baseDate.day, hour, minute);
+    return DateTime(
+      baseDate.year,
+      baseDate.month,
+      baseDate.day,
+      int.parse(parts[0]),
+      int.parse(parts[1]),
+    );
   }
 }

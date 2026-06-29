@@ -150,8 +150,9 @@ class HeroSpotlightCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 8),
                               LiveProgressBar(
-                                startTime: channel.currentProgram.startDate,
-                                endTime: channel.currentProgram.endDate,
+                                progress:
+                                    (channel.currentProgram.progressPercent /
+                                    100),
                               ),
                             ],
                           ),

@@ -87,8 +87,8 @@ class ChannelMiniCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       LiveProgressBar(
-                        startTime: channel.currentProgram.startDate,
-                        endTime: channel.currentProgram.endDate,
+                        progress:
+                            (channel.currentProgram.progressPercent / 100),
                       ),
                     ],
                   ),
