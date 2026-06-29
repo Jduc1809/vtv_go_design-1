@@ -123,10 +123,10 @@ class ApiService {
     String channelId, {
     DateTime? targetDate,
   }) async {
-    // 1. Grab the LOCAL date (e.g., June 28 in Vietnam)
+    //Grab the local date
     final localDate = targetDate ?? DateTime.now();
 
-    // 2. Construct the exact local midnight bounds (00:00:00 to 23:59:59)
+    //Construct the exact local midnight bounds (00:00:00 to 23:59:59)
     final localStart = DateTime(
       localDate.year,
       localDate.month,
@@ -144,7 +144,7 @@ class ApiService {
       59,
     );
 
-    // 3. Convert those specific bounds to UTC for the API request
+    //Convert those specific bounds to UTC for the API request
     final startIsoDate = localStart.toUtc().toIso8601String();
     final endIsoDate = localEnd.toUtc().toIso8601String();
 
