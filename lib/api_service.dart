@@ -63,7 +63,6 @@ class ApiService {
         headers: {'Authorization': token, 'Accept': 'application/json'},
       );
 
-      log('API RESPONSE');
       log('URL: $url');
       log('STATUS: ${response.statusCode}');
       final decodedJson = json.decode(response.body);
@@ -124,23 +123,30 @@ class ApiService {
     String channelId, {
     DateTime? targetDate,
   }) async {
-    final baseDate = (targetDate ?? DateTime.now()).toUtc();
-    final startIsoDate = DateTime.utc(
-      baseDate.year,
-      baseDate.month,
-      baseDate.day,
+    // 1. Grab the LOCAL date (e.g., June 28 in Vietnam)
+    final localDate = targetDate ?? DateTime.now();
+
+    // 2. Construct the exact local midnight bounds (00:00:00 to 23:59:59)
+    final localStart = DateTime(
+      localDate.year,
+      localDate.month,
+      localDate.day,
       0,
       0,
       0,
-    ).toIso8601String();
-    final endIsoDate = DateTime.utc(
-      baseDate.year,
-      baseDate.month,
-      baseDate.day,
+    );
+    final localEnd = DateTime(
+      localDate.year,
+      localDate.month,
+      localDate.day,
       23,
       59,
       59,
-    ).toIso8601String();
+    );
+
+    // 3. Convert those specific bounds to UTC for the API request
+    final startIsoDate = localStart.toUtc().toIso8601String();
+    final endIsoDate = localEnd.toUtc().toIso8601String();
 
     return await _request<List<Program>>(
           '/live-channel/api/v1/channels/$channelId/programs',

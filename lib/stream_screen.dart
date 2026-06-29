@@ -32,14 +32,17 @@ class _StreamScreenState extends State<StreamScreen> {
   final Map<String, List<Program>> _scheduleCache = {};
 
   @override
+  @override
   void initState() {
     super.initState();
 
     final now = DateTime.now();
     _selectedDate = DateTime(now.year, now.month, now.day);
+
+    // Generate the past 6 days + Today (7 days total), ending at Today.
     _availableDates = List.generate(
       7,
-      (index) => _selectedDate.subtract(Duration(days: 3 - index)),
+      (index) => _selectedDate.subtract(Duration(days: 6 - index)),
     );
 
     _loadAndPlayBroadcast();
@@ -53,18 +56,28 @@ class _StreamScreenState extends State<StreamScreen> {
       if (_scheduleCache.containsKey(dateKey)) {
         _futureSchedule = Future.value(_scheduleCache[dateKey]);
       } else {
-        _futureSchedule = ApiService.fetchChannelSchedule(
-          widget.channel.id,
-          targetDate: date,
-        ).then((schedule) {
-          _scheduleCache[dateKey] = schedule;
-          return schedule;
-        });
+        _futureSchedule =
+            ApiService.fetchChannelSchedule(
+              widget.channel.id,
+              targetDate: date,
+            ).then((schedule) {
+              // ── INJECT WIRETAP HERE ──
+              print("=== SCHEDULE WIRETAP s(${date.day}/${date.month}) ===");
+              for (var p in schedule) {
+                print(
+                  "[${p.formattedStartTime}] ${p.title} | isLive: ${p.isLive}",
+                );
+              }
+
+              _scheduleCache[dateKey] = schedule;
+              return schedule;
+            });
       }
     });
   }
 
-  String _formatDateKey(DateTime date) => "${date.year}-${date.month}-${date.day}";
+  String _formatDateKey(DateTime date) =>
+      "${date.year}-${date.month}-${date.day}";
 
   Future<void> _disposeCurrentPlayer() async {
     if (_videoPlayerController != null) {
@@ -107,13 +120,17 @@ class _StreamScreenState extends State<StreamScreen> {
 
       final targetUrl = _currentSelectedMode?.streamUrl ?? '';
       if (targetUrl.isEmpty) {
-        if (mounted) setState(() => _errorMessage = "Không tìm thấy luồng phát sóng hợp lệ");
+        if (mounted)
+          setState(
+            () => _errorMessage = "Không tìm thấy luồng phát sóng hợp lệ",
+          );
         return;
       }
 
       await _initializeAndPlay(targetUrl);
     } catch (e) {
-      if (mounted) setState(() => _errorMessage = "Không thể tải luồng video: $e");
+      if (mounted)
+        setState(() => _errorMessage = "Không thể tải luồng video: $e");
     }
   }
 
@@ -123,17 +140,17 @@ class _StreamScreenState extends State<StreamScreen> {
     try {
       final controller = VideoPlayerController.networkUrl(Uri.parse(url));
       await controller.initialize();
-      
+
       if (seekTo != null && controller.value.duration > seekTo) {
         await controller.seekTo(seekTo);
       }
-      
+
       if (mounted) {
         setState(() {
           _videoPlayerController = controller;
         });
         controller.play();
-        
+
         // Dispose old controller after new one starts playing
         if (oldController != null) {
           oldController.pause();
@@ -167,7 +184,9 @@ class _StreamScreenState extends State<StreamScreen> {
           return ListTile(
             leading: Icon(
               mode.isVip ? Icons.workspace_premium : Icons.hd,
-              color: mode.isVip ? Colors.amber : (isSelected ? Colors.red : Colors.white54),
+              color: mode.isVip
+                  ? Colors.amber
+                  : (isSelected ? Colors.red : Colors.white54),
             ),
             title: Text(
               mode.name,
@@ -197,7 +216,10 @@ class _StreamScreenState extends State<StreamScreen> {
     if (_currentSelectedMode?.id == selectedMode.id) return;
 
     if (selectedMode.isVip) {
-      _showSnackBar('${selectedMode.name} yêu cầu tài khoản Premium VIP!', Colors.amber[800]);
+      _showSnackBar(
+        '${selectedMode.name} yêu cầu tài khoản Premium VIP!',
+        Colors.amber[800],
+      );
       return;
     }
 
@@ -207,7 +229,8 @@ class _StreamScreenState extends State<StreamScreen> {
       return;
     }
 
-    final currentPosition = await _videoPlayerController?.position ?? Duration.zero;
+    final currentPosition =
+        await _videoPlayerController?.position ?? Duration.zero;
 
     setState(() {
       _currentSelectedMode = selectedMode;
@@ -245,7 +268,10 @@ class _StreamScreenState extends State<StreamScreen> {
     }
 
     if (program.isFuture) {
-      _showSnackBar('Chương trình ${program.title} chưa bắt đầu!', Colors.orange);
+      _showSnackBar(
+        'Chương trình ${program.title} chưa bắt đầu!',
+        Colors.orange,
+      );
       return;
     }
 
@@ -261,13 +287,15 @@ class _StreamScreenState extends State<StreamScreen> {
       );
 
       if (targetUrl == null || targetUrl.isEmpty) {
-        if (mounted) setState(() => _errorMessage = "Chương trình không thể xem lại");
+        if (mounted)
+          setState(() => _errorMessage = "Chương trình không thể xem lại");
         return;
       }
 
       await _initializeAndPlay(targetUrl);
     } catch (e) {
-      if (mounted) setState(() => _errorMessage = "Không thể tải luồng video: $e");
+      if (mounted)
+        setState(() => _errorMessage = "Không thể tải luồng video: $e");
     }
   }
 
@@ -284,15 +312,28 @@ class _StreamScreenState extends State<StreamScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           widget.channel.name,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           if (_currentlyPlayingProgram != null)
             Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: TextButton.icon(
-                icon: const Icon(Icons.emergency_recording, color: Colors.redAccent, size: 18),
-                label: const Text('LIVE', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                icon: const Icon(
+                  Icons.emergency_recording,
+                  color: Colors.redAccent,
+                  size: 18,
+                ),
+                label: const Text(
+                  'LIVE',
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 onPressed: _loadAndPlayBroadcast,
               ),
             ),
@@ -319,10 +360,17 @@ class _StreamScreenState extends State<StreamScreen> {
                 children: [
                   const _DragHandle(),
                   const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 20.0,
+                      vertical: 8.0,
+                    ),
                     child: Text(
                       'Lịch Phát Sóng',
-                      style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   _DateSelector(
@@ -369,25 +417,34 @@ class _VideoSection extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: Colors.black,
-      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.45),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.45,
+      ),
       child: errorMessage != null
           ? AspectRatio(
               aspectRatio: 16 / 9,
-              child: Center(child: Text(errorMessage!, style: const TextStyle(color: Colors.red))),
+              child: Center(
+                child: Text(
+                  errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             )
           : controller != null && controller!.value.isInitialized
-              ? Center(
-                  child: CustomVideoPlayer(
-                    controller: controller!,
-                    isLive: isLive,
-                    onSettingsTap: onSettingsTap,
-                    shareText: 'Xem $channelName trên VTV Go!',
-                  ),
-                )
-              : const AspectRatio(
-                  aspectRatio: 16 / 9,
-                  child: Center(child: CircularProgressIndicator(color: Colors.white)),
-                ),
+          ? Center(
+              child: CustomVideoPlayer(
+                controller: controller!,
+                isLive: isLive,
+                onSettingsTap: onSettingsTap,
+                shareText: 'Xem $channelName trên VTV Go!',
+              ),
+            )
+          : const AspectRatio(
+              aspectRatio: 16 / 9,
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            ),
     );
   }
 }
@@ -436,7 +493,8 @@ class _DateSelector extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         itemBuilder: (context, index) {
           final date = availableDates[index];
-          final isSelected = date.day == selectedDate.day && date.month == selectedDate.month;
+          final isSelected =
+              date.day == selectedDate.day && date.month == selectedDate.month;
           return GestureDetector(
             onTap: () {
               if (!isSelected) onDateSelected(date);
@@ -448,7 +506,9 @@ class _DateSelector extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 color: isSelected ? null : cardColor,
-                border: isSelected ? null : Border.all(color: Colors.grey[700]!, width: 1),
+                border: isSelected
+                    ? null
+                    : Border.all(color: Colors.grey[700]!, width: 1),
                 gradient: isSelected
                     ? LinearGradient(
                         colors: [Colors.orange[400]!, Colors.deepOrange[500]!],
@@ -457,7 +517,13 @@ class _DateSelector extends StatelessWidget {
                       )
                     : null,
                 boxShadow: isSelected
-                    ? const [BoxShadow(color: Color(0x66FF5722), blurRadius: 8, offset: Offset(0, 4))]
+                    ? const [
+                        BoxShadow(
+                          color: Color(0x66FF5722),
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ]
                     : const [],
               ),
               child: Center(
@@ -495,14 +561,26 @@ class _ScheduleList extends StatelessWidget {
       future: futureSchedule,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator(color: Colors.orange));
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.orange),
+          );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Lỗi: ${snapshot.error}', style: const TextStyle(color: Colors.red)));
+          return Center(
+            child: Text(
+              'Lỗi: ${snapshot.error}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
         }
         final schedule = snapshot.data ?? [];
         if (schedule.isEmpty) {
-          return const Center(child: Text('Không có chương trình khả dụng', style: TextStyle(color: Colors.grey)));
+          return const Center(
+            child: Text(
+              'Không có chương trình khả dụng',
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
         }
 
         int liveIndex = schedule.indexWhere((p) => p.isLive);
@@ -514,7 +592,9 @@ class _ScheduleList extends StatelessWidget {
           itemCount: schedule.length,
           itemBuilder: (context, index) => _ProgramItem(
             program: schedule[index],
-            isPlaying: (currentlyPlayingProgram == null && schedule[index].isLive) || (currentlyPlayingProgram?.id == schedule[index].id),
+            isPlaying:
+                (currentlyPlayingProgram == null && schedule[index].isLive) ||
+                (currentlyPlayingProgram?.id == schedule[index].id),
             onTap: () => onProgramTap(schedule[index]),
           ),
         );
@@ -547,7 +627,9 @@ class _ProgramItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: isPlaying ? Border.all(color: const Color(0x80F44336), width: 1) : null,
+          border: isPlaying
+              ? Border.all(color: const Color(0x80F44336), width: 1)
+              : null,
         ),
         child: Row(
           children: [
@@ -566,7 +648,12 @@ class _ProgramItem extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     program.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, height: 1.3),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      height: 1.3,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -576,7 +663,11 @@ class _ProgramItem extends StatelessWidget {
             const SizedBox(width: 12),
             Container(width: 1, height: 40, color: Colors.grey[700]),
             const SizedBox(width: 16),
-            _PlayStatus(isPlaying: isPlaying, isLive: program.isLive, isRedText: isRedText),
+            _PlayStatus(
+              isPlaying: isPlaying,
+              isLive: program.isLive,
+              isRedText: isRedText,
+            ),
           ],
         ),
       ),
@@ -605,13 +696,25 @@ class _PlayStatus extends StatelessWidget {
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.white,
-            boxShadow: [BoxShadow(color: Color(0x33000000), blurRadius: 4, offset: Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x33000000),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
-          child: Icon(isPlaying ? Icons.play_arrow : Icons.play_arrow_rounded, color: Colors.black, size: 20),
+          child: Icon(
+            isPlaying ? Icons.play_arrow : Icons.play_arrow_rounded,
+            color: Colors.black,
+            size: 20,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
-          isPlaying ? (isLive ? 'Trực Tiếp' : 'Đang Phát') : (isLive ? 'Trực Tiếp' : 'Xem Lại'),
+          isPlaying
+              ? (isLive ? 'Trực Tiếp' : 'Đang Phát')
+              : (isLive ? 'Trực Tiếp' : 'Xem Lại'),
           style: TextStyle(
             color: isRedText ? Colors.redAccent : Colors.grey[400],
             fontSize: 11,
