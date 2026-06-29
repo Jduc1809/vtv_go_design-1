@@ -61,14 +61,6 @@ class _StreamScreenState extends State<StreamScreen> {
               widget.channel.id,
               targetDate: date,
             ).then((schedule) {
-              // ── INJECT WIRETAP HERE ──
-              print("=== SCHEDULE WIRETAP s(${date.day}/${date.month}) ===");
-              for (var p in schedule) {
-                print(
-                  "[${p.formattedStartTime}] ${p.title} | isLive: ${p.isLive}",
-                );
-              }
-
               _scheduleCache[dateKey] = schedule;
               return schedule;
             });
