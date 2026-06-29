@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'api_service.dart';
@@ -106,11 +107,11 @@ class _ChannelsAppBar extends StatelessWidget implements PreferredSizeWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.blue.withValues(alpha: 0.4),
+                    color: Color(0x662196F3), // Colors.blue with 0.4 opacity
                     blurRadius: 8,
-                    offset: const Offset(0, 4),
+                    offset: Offset(0, 4),
                   ),
                 ],
               ),
@@ -151,7 +152,7 @@ class _CategoryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
     int columns = 2;
     if (screenWidth >= 900) {
       columns = 4;
@@ -196,22 +197,22 @@ class _ChannelGridCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              channel.thumbnail.isNotEmpty ? channel.thumbnail : channel.logo,
+            CachedNetworkImage(
+              imageUrl: channel.thumbnail.isNotEmpty ? channel.thumbnail : channel.logo,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
+              errorWidget: (context, url, error) => Container(
                 color: Colors.grey[800],
                 child: const Icon(Icons.tv, color: Colors.white54, size: 40),
               ),
             ),
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withValues(alpha: 0.7),
+                    Color(0xB3000000), // Colors.black with 0.7 opacity
                   ],
                 ),
               ),
