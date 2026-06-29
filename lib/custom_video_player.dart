@@ -177,11 +177,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> {
                                 final RenderBox? box =
                                     buttonContext.findRenderObject()
                                         as RenderBox?;
-                                Share.share(
-                                  widget.shareText,
-                                  sharePositionOrigin:
-                                      box!.localToGlobal(Offset.zero) &
-                                      box.size,
+                                SharePlus.instance.share(
+                                  ShareParams(
+                                    text: widget.shareText,
+                                    sharePositionOrigin:
+                                        box!.localToGlobal(Offset.zero) &
+                                        box.size,
+                                  ),
                                 );
                                 },
                                 );
