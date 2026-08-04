@@ -66,14 +66,7 @@ class HomeScreenView extends StatelessWidget {
                   elevation: 0,
                   pinned: true,
                   floating: true,
-                  title: const Text(
-                    'VTV Go',
-                    style: TextStyle(
-                      color: AppColors.accentColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    ),
-                  ),
+                  title: Image.asset('assets/VTVgo_logo.jpg', height: 32),
                   actions: [
                     IconButton(
                       icon: const Icon(Icons.search, color: Colors.white),
