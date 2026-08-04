@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'api_service.dart';
 import 'channel_data.dart';
+import 'search_screen.dart';
 import 'stream_screen.dart';
 
 class ChannelsScreen extends StatefulWidget {
@@ -87,6 +88,17 @@ class _ChannelsAppBar extends StatelessWidget implements PreferredSizeWidget {
         height: 28,
         fit: BoxFit.contain,
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search, color: Colors.white),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SearchScreen()),
+            );
+          },
+        ),
+      ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(60),
         child: Padding(
@@ -198,7 +210,9 @@ class _ChannelGridCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             CachedNetworkImage(
-              imageUrl: channel.thumbnail.isNotEmpty ? channel.thumbnail : channel.logo,
+              imageUrl: channel.thumbnail.isNotEmpty
+                  ? channel.thumbnail
+                  : channel.logo,
               fit: BoxFit.cover,
               errorWidget: (context, url, error) => Container(
                 color: Colors.grey[800],
