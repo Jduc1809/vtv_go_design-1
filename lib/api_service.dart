@@ -58,13 +58,26 @@ class ApiService {
     ).replace(queryParameters: queryParams);
 
     try {
+      log('\n OUTBOUND API REQUEST');
+      log('GET: $url');
+
       final response = await http.get(
         url,
         headers: {'Authorization': token, 'Accept': 'application/json'},
       );
 
-      log('URL: $url');
+      log('\n INBOUND API RESPONSE');
+      log('ENDPOINT: $endpoint');
       log('STATUS: ${response.statusCode}');
+
+      try {
+        final decoded = json.decode(response.body);
+        log(
+          'BODY (JSON):\n${const JsonEncoder.withIndent('  ').convert(decoded)}',
+        );
+      } catch (_) {
+        log('BODY (RAW):\n${response.body}');
+      }
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {

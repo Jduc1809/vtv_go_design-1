@@ -39,7 +39,8 @@ class AuthService {
 
     log('Auth: Attempting network login...');
 
-    final rawSignatureString = '$deviceId&&$deviceName&&$versionCode&&$platform&&$secret';
+    final rawSignatureString =
+        '$deviceId&&$deviceName&&$versionCode&&$platform&&$secret';
     final signature = md5.convert(utf8.encode(rawSignatureString)).toString();
 
     final bodyMap = {
@@ -61,7 +62,11 @@ class AuthService {
     };
 
     try {
-      final url = Uri.parse('$baseUrl/user/nt/api/v1/auth/enter-guest').replace(queryParameters: bodyMap);
+      final url = Uri.parse(
+        '$baseUrl/user/nt/api/v1/auth/enter-guest',
+      ).replace(queryParameters: bodyMap);
+
+      log('AUTH URL: $url');
 
       final response = await http.post(
         url,
@@ -71,6 +76,10 @@ class AuthService {
         },
         body: bodyMap,
       );
+
+      log('AUTH STATUS: ${response.statusCode}');
+      log('AUTH BODY: ${response.body}');
+      log('========================================');
 
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
@@ -101,7 +110,8 @@ class AuthService {
 
     log('Auth: Refreshing expired token...');
 
-    final rawSignatureString = '$deviceId&&$deviceName&&$versionCode&&$platform&&$refreshToken&&$secret';
+    final rawSignatureString =
+        '$deviceId&&$deviceName&&$versionCode&&$platform&&$refreshToken&&$secret';
     final signature = md5.convert(utf8.encode(rawSignatureString)).toString();
 
     final bodyMap = {
