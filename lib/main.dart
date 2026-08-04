@@ -1,11 +1,16 @@
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'auth_service.dart';
 import 'main_wrapper.dart';
 
 void main() async {
+  if (kDebugMode) {
+    HttpOverrides.global = DevHttpOverrides();
+  }
   WidgetsFlutterBinding.ensureInitialized();
 
   bool loggedIn = await AuthService.loginAsGuest();
@@ -30,5 +35,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData.dark(), //Dark mode
       home: const MainWrapper(),
     );
+  }
+}
+
+class DevHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
   }
 }
