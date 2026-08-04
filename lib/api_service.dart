@@ -65,12 +65,16 @@ class ApiService {
 
       log('URL: $url');
       log('STATUS: ${response.statusCode}');
-      final decodedJson = json.decode(response.body);
-      log('BODY:\n${const JsonEncoder.withIndent('  ').convert(decodedJson)}');
 
       if (response.statusCode == 200) {
-        log('API call success: $endpoint');
-        return json.decode(response.body);
+        if (response.body.isNotEmpty) {
+          final decodedJson = json.decode(response.body);
+          log('API call success: $endpoint');
+          return decodedJson;
+        } else {
+          log('API call success but empty body: $endpoint');
+          return null;
+        }
       } else if (response.statusCode == 401) {
         log("Token expired, attempting refresh...");
         if (await AuthService.refreshExpiredToken()) {
@@ -81,6 +85,9 @@ class ApiService {
         }
       } else {
         log("API error: ${response.statusCode} for $endpoint");
+        log(
+          "Response body: ${response.body}",
+        ); // Prints the raw HTML or empty string
       }
     } catch (e) {
       log("API Exception: $e");
