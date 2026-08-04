@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
+import 'package:vtv_go/search_result.dart';
 
 import 'auth_service.dart';
 import 'channel_data.dart';
@@ -214,14 +215,35 @@ class ApiService {
     );
   }
 
-  static Future<void> testSearchApi(String searchQuery) async {
-    await _get(
-      '/search-app/api/v1/search/metadata',
-      extraQueryParameters: {
-        'limit': '20',
-        'page': '1',
-        'textSearch': searchQuery,
-      },
-    );
+  static Future<List<SearchResult>> searchContent(
+    String query, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    if (query.trim().isEmpty) return [];
+
+    return await _request<List<SearchResult>>(
+          '/search-app/api/v1/search/metadata',
+          params: {
+            'limit': limit.toString(),
+            'page': page.toString(),
+            'textSearch': query,
+          },
+          fromJson: (data) {
+            if (data is! List) return [];
+            return data
+                .whereType<Map<String, dynamic>>()
+                .map((item) {
+                  try {
+                    return SearchResult.fromJson(item);
+                  } catch (_) {
+                    return null;
+                  }
+                })
+                .whereType<SearchResult>()
+                .toList();
+          },
+        ) ??
+        [];
   }
 }

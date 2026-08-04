@@ -78,7 +78,7 @@ class HomeScreenView extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.search, color: Colors.white),
                       onPressed: () {
-                        ApiService.testSearchApi('thoi su');
+                        ApiService.searchContent('thoi su');
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
