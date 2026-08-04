@@ -213,4 +213,15 @@ class ApiService {
       },
     );
   }
+
+  static Future<void> testSearchApi(String searchQuery) async {
+    await _get(
+      '/search-app/api/v1/search/metadata',
+      extraQueryParameters: {
+        'limit': '20',
+        'page': '1',
+        'textSearch': searchQuery,
+      },
+    );
+  }
 }

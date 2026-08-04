@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:vtv_go/api_service.dart';
 
 import 'core/constants/app_colors.dart';
 import 'providers/home_provider.dart';
@@ -73,6 +74,22 @@ class HomeScreenView extends StatelessWidget {
                       fontSize: 24,
                     ),
                   ),
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: () {
+                        ApiService.testSearchApi('thoi su');
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Đang thử nghiệm API tìm kiếm...'),
+                            backgroundColor: AppColors.accentColor,
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
 
                 if (allChannels.isNotEmpty)
@@ -151,7 +168,9 @@ class HomeScreenView extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentColor),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentColor,
+            ),
             onPressed: context.read<HomeProvider>().refreshData,
             child: const Text('Thử Lại', style: TextStyle(color: Colors.white)),
           ),
