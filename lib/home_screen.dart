@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:vtv_go/api_service.dart';
 
 import 'core/constants/app_colors.dart';
 import 'providers/home_provider.dart';
+import 'search_screen.dart';
 import 'widgets/home/category_row.dart';
 import 'widgets/home/favorite_circle_card.dart';
 import 'widgets/home/hero_spotlight_card.dart';
@@ -78,13 +78,10 @@ class HomeScreenView extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.search, color: Colors.white),
                       onPressed: () {
-                        ApiService.searchContent('thoi su');
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Đang thử nghiệm API tìm kiếm...'),
-                            backgroundColor: AppColors.accentColor,
-                            duration: Duration(seconds: 2),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SearchScreen(),
                           ),
                         );
                       },
