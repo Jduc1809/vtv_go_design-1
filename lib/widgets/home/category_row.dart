@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../channel_data.dart';
+import '../../data_handler/channel_data.dart';
 import 'channel_mini_card.dart';
 
 class CategoryRow extends StatelessWidget {

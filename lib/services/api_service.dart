@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:http/http.dart' as http;
-import 'package:vtv_go/search_result.dart';
+import 'package:vtv_go/data_handler/search_result.dart';
 
-import '../channel_data.dart';
+import '../data_handler/channel_data.dart';
 import 'auth_service.dart';
 
 class ApiService {

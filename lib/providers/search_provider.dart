@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '/search_result.dart';
+import '../data_handler/search_result.dart';
 import '../services/api_service.dart';
 
 //Handle API calls and state management for the search functionality.

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/app_colors.dart';
+import '../data_handler/search_result.dart';
 import '../providers/search_provider.dart';
-import '../search_result.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});

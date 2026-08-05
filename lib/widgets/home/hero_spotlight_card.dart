@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data_handler/channel_data.dart';
 import '../../screens/stream_screen.dart';
 import '../epg_bar.dart';
 
