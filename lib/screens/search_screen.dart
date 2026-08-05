@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/constants/app_colors.dart';
-import 'providers/search_provider.dart';
-import 'search_result.dart';
+import '../core/constants/app_colors.dart';
+import '../providers/search_provider.dart';
+import '../search_result.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
@@ -120,7 +120,7 @@ class _SearchScreenViewState extends State<SearchScreenView> {
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 16 / 9, // Perfect for TV/Video thumbnails
+        childAspectRatio: 16 / 9,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),

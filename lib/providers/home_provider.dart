@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../api_service.dart';
 import '../channel_data.dart';
+import '../services/api_service.dart';
 
 class HomeProvider extends ChangeNotifier {
   List<ChannelCategory> _categories = [];
@@ -78,8 +78,8 @@ class HomeProvider extends ChangeNotifier {
     return allChannels
         .where((channel) => _favoriteIds.contains(channel.id))
         .fold<List<Channel>>([], (list, channel) {
-      if (!list.any((c) => c.id == channel.id)) list.add(channel);
-      return list;
-    });
+          if (!list.any((c) => c.id == channel.id)) list.add(channel);
+          return list;
+        });
   }
 }

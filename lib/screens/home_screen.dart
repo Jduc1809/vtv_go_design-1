@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'core/constants/app_colors.dart';
-import 'providers/home_provider.dart';
+import '../core/constants/app_colors.dart';
+import '../providers/home_provider.dart';
+import '../widgets/home/category_row.dart';
+import '../widgets/home/favorite_circle_card.dart';
+import '../widgets/home/hero_spotlight_card.dart';
 import 'search_screen.dart';
-import 'widgets/home/category_row.dart';
-import 'widgets/home/favorite_circle_card.dart';
-import 'widgets/home/hero_spotlight_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});

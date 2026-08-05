@@ -15,11 +15,9 @@ class EpgBar extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(2),
       child: LinearProgressIndicator(
-        value: safeValue, // Even at 0.0, the background track will render!
+        value: safeValue, // Even at 0.0, the background track will render
         minHeight: 3.5,
-        backgroundColor: Colors.white.withAlpha(
-          45,
-        ), // Made slightly brighter (18% opacity) so it's easy to see
+        backgroundColor: Colors.white.withAlpha(45),
         valueColor: const AlwaysStoppedAnimation<Color>(
           Color(0xFFE50914),
         ), // OTT Crimson

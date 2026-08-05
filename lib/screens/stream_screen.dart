@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:video_player/video_player.dart';
 
-import 'api_service.dart';
-import 'channel_data.dart';
-import 'custom_video_player.dart';
+import '../channel_data.dart';
+import '../custom_video_player.dart';
+import '../services/api_service.dart';
 
 class StreamScreen extends StatefulWidget {
   final Channel channel;

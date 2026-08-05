@@ -4,8 +4,8 @@ import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:vtv_go/search_result.dart';
 
+import '../channel_data.dart';
 import 'auth_service.dart';
-import 'channel_data.dart';
 
 class ApiService {
   static const String baseUrl = 'https://staging-api-vtvgo.vtvdigital.vn';

@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import 'api_service.dart';
-import 'channel_data.dart';
+import '../channel_data.dart';
+import '../services/api_service.dart';
 import 'search_screen.dart';
 import 'stream_screen.dart';
 

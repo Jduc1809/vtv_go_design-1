@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
-import '../../stream_screen.dart';
+import '../../screens/stream_screen.dart';
 import '../epg_bar.dart';
 
 class ChannelMiniCard extends StatelessWidget {

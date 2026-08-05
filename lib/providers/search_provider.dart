@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '/api_service.dart';
 import '/search_result.dart';
+import '../services/api_service.dart';
 
+//Handle API calls and state management for the search functionality.
 class SearchProvider extends ChangeNotifier {
   List<SearchResult> _results = [];
   List<SearchResult> get results => _results;
@@ -21,7 +22,7 @@ class SearchProvider extends ChangeNotifier {
     // Cancel the previous timer if the user is still typing
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
-    // Wait 500ms after the user stops typing to fire the API call
+    // Wait 500ms after the user stops typing to call the API
     _debounce = Timer(const Duration(milliseconds: 500), () {
       if (query.trim().isNotEmpty) {
         _performSearch(query);

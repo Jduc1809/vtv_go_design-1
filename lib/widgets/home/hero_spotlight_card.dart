@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../channel_data.dart';
 import '../../core/constants/app_colors.dart';
-import '../../stream_screen.dart';
+import '../../screens/stream_screen.dart';
 import '../epg_bar.dart';
 
 class HeroSpotlightCard extends StatelessWidget {
@@ -39,7 +39,7 @@ class HeroSpotlightCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Layer 1: Background Art (Using channel logo as fallback poster)
+              // Layer 1: Background Art
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: CachedNetworkImage(

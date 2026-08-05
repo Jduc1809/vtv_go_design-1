@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'auth_service.dart';
 import 'main_wrapper.dart';
+import 'services/auth_service.dart';
 
 void main() async {
   if (kDebugMode) {

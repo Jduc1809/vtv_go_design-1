@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
 import '../../channel_data.dart';
-import '../../stream_screen.dart';
 import '../../core/constants/app_colors.dart';
+import '../../screens/stream_screen.dart';
 
 class FavoriteCircleCard extends StatelessWidget {
   final Channel channel;

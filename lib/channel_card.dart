@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import 'channel_data.dart';
-import 'stream_screen.dart';
+import 'screens/stream_screen.dart';
 
 class ChannelCard extends StatelessWidget {
   final Channel channel;
