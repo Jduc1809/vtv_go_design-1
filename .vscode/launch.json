@@ -6,6 +6,37 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart"
+    },
+    {
+      "name": "Run on My Phone",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "00008120-000908C80A9BC01E"
+    },
+    {
+      "name": "Run on MacOS",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "macos"
+    },
+    {
+      "name": "Run on iOS ",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "72CA1E64-3746-46B5-AEF6-0867CC30CC43"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run on 2 devices",
+      "configurations": ["Run on My Phone", "Run on MacOS"]
+    },
+    {
+      "name": "Run on MacOS and iOS",
+      "configurations": ["Run on MacOS", "Run on iOS "]
     }
   ]
 }
