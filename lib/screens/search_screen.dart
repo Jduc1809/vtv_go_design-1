@@ -93,9 +93,16 @@ class _SearchScreenViewState extends State<SearchScreenView> {
 
     if (provider.errorMessage != null && provider.results.isEmpty) {
       return Center(
-        child: Text(
-          provider.errorMessage!,
-          style: const TextStyle(color: Colors.grey, fontSize: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.search_off, color: Colors.grey, size: 64),
+            const SizedBox(height: 16),
+            Text(
+              provider.errorMessage!,
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
         ),
       );
     }
