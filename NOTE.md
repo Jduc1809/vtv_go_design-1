@@ -1,0 +1,8 @@
+- Mô hình kiến trúc 3 layer - MVVM => dễ test, dễ bảo trì, dễ nâng cấp
+- BLoC (Cubid)
+- GoRouter
+- Dio
+- https://pub.dev/packages/json_serializable
+- Tham khảo: https://pub.dev/packages/better_player_plus
+- Firebase (InApp Noti)
+- https://pub.dev/packages/cached_network_image
